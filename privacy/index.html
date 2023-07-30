@@ -1,0 +1,33 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Privacy</title>
+</head>
+<body>
+    <ul id="fileLinks"></ul>
+</body>
+
+
+<script>
+    const fileLinks = document.getElementById('fileLinks');
+
+// Fetch the list of HTML files from the server
+fetch('/privacy/files.json')
+  .then((response) => response.json())
+  .then((files) => {
+    files.forEach((file) => {
+      const listItem = document.createElement('li');
+      const link = document.createElement('a');
+      link.href = file;
+      link.textContent = file;
+      listItem.appendChild(link);
+      fileLinks.appendChild(listItem);
+    });
+  })
+  .catch((error) => {
+    console.error('Error fetching file list:', error);
+  });
+</script>
+</html>

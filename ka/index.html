@@ -1,0 +1,60 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Image Restoration</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            text-align: center;
+            margin: 0;
+            padding: 0;
+            background-color: #f4f4f4;
+        }
+        header {
+            background-color: #4CAF50;
+            color: white;
+            padding: 1em;
+            font-size: 1.5em;
+        }
+        .content {
+            margin: 2em auto;
+            padding: 1em;
+            max-width: 800px;
+            background: white;
+            border-radius: 10px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+        }
+        img {
+            max-width: 100%;
+            height: auto;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            width: 100%; 
+        }
+        .download-button {
+            margin-bottom: 1em;
+        }
+    </style>
+</head>
+<body>
+    <header>
+        I finally restored Karuninchina Akasam
+    </header>
+    <div class="content">
+        <button class="download-button" onclick="downloadImage()">Download</button>
+        <br/>
+        <img id="restoredImage" src="karuninchina_akasam.png" alt="Karuninchina Akasam">
+    </div>
+
+    <script>
+        function downloadImage() {
+            const link = document.createElement('a');
+            link.href = document.getElementById('restoredImage').src;
+            link.download = 'karuninchina_akasam.png';
+            link.click();
+        }
+    </script>
+</body>
+</html>

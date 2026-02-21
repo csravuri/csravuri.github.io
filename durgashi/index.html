@@ -24,6 +24,7 @@
         <main class="invitation-container" id="content">
             <section class="names-card" aria-label="Couple">
                 <div class="names" id="names">Durga Sai <span class="amp">&amp;</span> Ashiervachita</div>
+                
             </section>
 
             <section class="events" aria-label="Events" id="events">
@@ -90,6 +91,19 @@
         <footer class="footer">
             <div class="hashtag">#durgashi</div>
         </footer>
+    </div>
+
+    <div class="lightbox" id="lightbox" hidden aria-hidden="true">
+        <div class="lightbox-backdrop" data-lightbox-close></div>
+        <div class="lightbox-dialog" role="dialog" aria-modal="true" aria-label="Gallery viewer">
+            <button class="lightbox-close" type="button" aria-label="Close" data-lightbox-close>×</button>
+            <button class="lightbox-nav prev" type="button" aria-label="Previous image" data-lightbox-prev>‹</button>
+            <div class="lightbox-stage" id="lightboxStage">
+                <img id="lightboxImage" alt="">
+            </div>
+            <button class="lightbox-nav next" type="button" aria-label="Next image" data-lightbox-next>›</button>
+            <div class="lightbox-counter" id="lightboxCounter" aria-live="polite"></div>
+        </div>
     </div>
 
     <script type="module" src="./app.js"></script>

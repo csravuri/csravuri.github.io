@@ -76,9 +76,13 @@ function render(data) {
   const couple = `${data.groom || "Groom"} & ${data.bride || "Bride"}`;
   const familyName = data.familyName || "Ravuri";
 
-  $("#heroTitle").textContent = `${familyName}'s Wedding Invitation`;
-  $("#names").innerHTML = `${data.groom || "Durga Sai"} <span class="amp">&amp;</span> ${data.bride || "Ashiervachita"}`;
-  $("#familyLine").textContent = `Family name: ${familyName}`;
+  const heroTitle = $("#heroTitle");
+  const names = $("#names");
+  const familyLine = $("#familyLine");
+
+  if (heroTitle) heroTitle.textContent = `${familyName}'s Wedding Invitation`;
+  if (names) names.innerHTML = `${data.groom || "Durga Sai"} <span class="amp">&amp;</span> ${data.bride || "Ashiervachita"}`;
+  if (familyLine) familyLine.textContent = `Family name: ${familyName}`;
 
   const eventsEl = $("#events");
   eventsEl.innerHTML = "";
@@ -128,6 +132,190 @@ function render(data) {
 
     card.appendChild(actions);
     eventsEl.appendChild(card);
+  }
+}
+
+function initGalleryLightbox() {
+  const strip = $("#galleryStrip");
+  const lightbox = $("#lightbox");
+  const stage = $("#lightboxStage");
+  const lightboxImage = $("#lightboxImage");
+  const counter = $("#lightboxCounter");
+
+  if (!strip || !lightbox || !stage || !lightboxImage || !counter) return;
+
+  const thumbnails = Array.from(strip.querySelectorAll("img"));
+  if (thumbnails.length === 0) return;
+
+  const closeEls = Array.from(lightbox.querySelectorAll("[data-lightbox-close]"));
+  const closeBtn = lightbox.querySelector(".lightbox-close");
+  const prevBtn = lightbox.querySelector("[data-lightbox-prev]");
+  const nextBtn = lightbox.querySelector("[data-lightbox-next]");
+  const focusables = [prevBtn, nextBtn, closeBtn].filter((el) => el && typeof el.focus === "function");
+
+  let isOpen = false;
+  let currentIndex = 0;
+  let lastFocused = null;
+
+  const modIndex = (n) => (n + thumbnails.length) % thumbnails.length;
+
+  function setOpen(open) {
+    isOpen = open;
+    if (open) {
+      lastFocused = document.activeElement;
+      lightbox.hidden = false;
+      lightbox.setAttribute("aria-hidden", "false");
+      document.body.classList.add("lightbox-open");
+      (closeBtn || lightbox).focus?.();
+    } else {
+      lightbox.hidden = true;
+      lightbox.setAttribute("aria-hidden", "true");
+      document.body.classList.remove("lightbox-open");
+      if (lastFocused && typeof lastFocused.focus === "function") lastFocused.focus();
+      lastFocused = null;
+    }
+  }
+
+  function show(index) {
+    currentIndex = modIndex(index);
+    const img = thumbnails[currentIndex];
+    lightboxImage.src = img.currentSrc || img.src;
+    lightboxImage.alt = img.alt || `Gallery image ${currentIndex + 1}`;
+    counter.textContent = `${currentIndex + 1} / ${thumbnails.length}`;
+
+    const next = thumbnails[modIndex(currentIndex + 1)];
+    const prev = thumbnails[modIndex(currentIndex - 1)];
+    new Image().src = next.currentSrc || next.src;
+    new Image().src = prev.currentSrc || prev.src;
+  }
+
+  function openAt(index) {
+    show(index);
+    if (!isOpen) {
+      setOpen(true);
+      document.addEventListener("keydown", onKeyDown, true);
+    }
+  }
+
+  function close() {
+    if (!isOpen) return;
+    setOpen(false);
+    document.removeEventListener("keydown", onKeyDown, true);
+  }
+
+  function prev() {
+    show(currentIndex - 1);
+  }
+
+  function next() {
+    show(currentIndex + 1);
+  }
+
+  function onKeyDown(e) {
+    if (!isOpen) return;
+
+    if (e.key === "Escape") {
+      e.preventDefault();
+      close();
+      return;
+    }
+
+    if (e.key === "ArrowLeft") {
+      e.preventDefault();
+      prev();
+      return;
+    }
+
+    if (e.key === "ArrowRight") {
+      e.preventDefault();
+      next();
+      return;
+    }
+
+    if (e.key === "Tab") {
+      const active = document.activeElement;
+      const first = focusables[0];
+      const last = focusables[focusables.length - 1];
+      if (!first || !last) return;
+
+      if (e.shiftKey && active === first) {
+        e.preventDefault();
+        last.focus();
+      } else if (!e.shiftKey && active === last) {
+        e.preventDefault();
+        first.focus();
+      }
+    }
+  }
+
+  for (const [i, img] of thumbnails.entries()) {
+    img.tabIndex = 0;
+    img.setAttribute("role", "button");
+    img.setAttribute("aria-label", `${img.alt || "Open gallery image"} (opens viewer)`);
+
+    img.addEventListener("click", () => openAt(i));
+    img.addEventListener("keydown", (e) => {
+      if (e.key === "Enter" || e.key === " ") {
+        e.preventDefault();
+        openAt(i);
+      }
+    });
+  }
+
+  for (const el of closeEls) el.addEventListener("click", close);
+  prevBtn?.addEventListener("click", prev);
+  nextBtn?.addEventListener("click", next);
+
+  // Swipe (and mouse-drag) navigation on the stage
+  let activePointerId = null;
+  let startX = 0;
+  let startY = 0;
+
+  stage.addEventListener("pointerdown", (e) => {
+    if (!isOpen) return;
+    if (e.pointerType === "mouse" && e.button !== 0) return;
+    activePointerId = e.pointerId;
+    startX = e.clientX;
+    startY = e.clientY;
+    stage.setPointerCapture?.(e.pointerId);
+  });
+
+  stage.addEventListener("pointerup", (e) => {
+    if (!isOpen) return;
+    if (activePointerId !== e.pointerId) return;
+    activePointerId = null;
+
+    const dx = e.clientX - startX;
+    const dy = e.clientY - startY;
+    const absX = Math.abs(dx);
+    const absY = Math.abs(dy);
+    const threshold = 44;
+
+    if (absX > threshold && absX > absY * 1.2) {
+      if (dx > 0) prev();
+      else next();
+    }
+  });
+
+  stage.addEventListener("pointercancel", () => {
+    activePointerId = null;
+  });
+}
+
+async function initData() {
+  try {
+    const res = await fetch("./data.md", { cache: "no-store" });
+    if (!res.ok) throw new Error(`Failed to load data.md (${res.status})`);
+    const md = await res.text();
+    const base = extractSection(md, "BaseData");
+    if (!base) throw new Error("BaseData section not found in data.md");
+    render(parseBaseData(base));
+  } catch (err) {
+    console.warn(err);
+    const note = document.createElement("div");
+    note.className = "load-error";
+    note.textContent = "Could not load data.md. Showing fallback content.";
+    $("#content")?.appendChild(note);
   }
 }
 
@@ -199,3 +387,4 @@ function initStars() {
 }
 
 initStars();
+initGalleryLightbox();

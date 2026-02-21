@@ -698,7 +698,7 @@ function initStars() {
         y: Math.random() * height,
         radius: 0.7 + Math.random() * 1.4,
         alpha: 0.25 + Math.random() * 0.75,
-        speed: (Math.random() * 0.22 + 0.05) * (Math.random() < 0.5 ? -1 : 1),
+        speed: (Math.random() * 0.03 + 0.006) * (Math.random() < 0.5 ? -1 : 1),
       });
     }
   }

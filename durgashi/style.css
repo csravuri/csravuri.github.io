@@ -306,8 +306,9 @@ body.lightbox-open {
 }
 
 .gallery-container {
-    height: 20vh;
-    min-height: 170px;
+    /* increase gallery area by ~70% so taller thumbnails fit */
+    height: auto;
+    min-height: 289px;
     padding: 14px 16px 16px;
     color: #fff;
     background: linear-gradient(to bottom, rgba(25, 14, 10, 0.88), rgba(9, 6, 5, 0.96));
@@ -350,9 +351,8 @@ body.lightbox-open {
 
 .gallery-strip img {
     flex: 0 0 auto;
-    height: calc(20vh - 86px);
-    min-height: 92px;
-    max-height: 132px;
+    /* increase thumbnail height by ~70% (original min 92 -> ~156, max 132 -> ~224) */
+    height: clamp(156px, 34vh, 224px);
     width: auto;
     object-fit: cover;
     border-radius: 14px;

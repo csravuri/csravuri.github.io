@@ -72,6 +72,23 @@ function mailtoRsvp({ familyName, couple, eventName }) {
   return `mailto:?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(body)}`;
 }
 
+function shuffleArrayInPlace(arr) {
+  for (let i = arr.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [arr[i], arr[j]] = [arr[j], arr[i]];
+  }
+  return arr;
+}
+
+function decorateGalleryThumbnails(strip) {
+  const thumbnails = Array.from(strip.querySelectorAll("img"));
+  for (const img of thumbnails) {
+    img.tabIndex = 0;
+    img.setAttribute("role", "button");
+    img.setAttribute("aria-label", `${img.alt || "Open gallery image"} (opens viewer)`);
+  }
+}
+
 function render(data) {
   const couple = `${data.groom || "Groom"} & ${data.bride || "Bride"}`;
   const familyName = data.familyName || "Ravuri";
@@ -135,6 +152,74 @@ function render(data) {
   }
 }
 
+async function initGalleryDrive() {
+  const strip = $("#galleryStrip");
+  if (!strip) return;
+
+  const folderId = strip.dataset.gdriveFolderId;
+  if (!folderId) {
+    decorateGalleryThumbnails(strip);
+    shuffleArrayInPlace(Array.from(strip.children)).forEach((n) => strip.appendChild(n));
+    return;
+  }
+
+  const apiKey = strip.dataset.gdriveApiKey;
+  if (!apiKey) {
+    console.warn("Gallery: set data-gdrive-api-key on #galleryStrip to load from Google Drive. Using local fallback images.");
+    decorateGalleryThumbnails(strip);
+    shuffleArrayInPlace(Array.from(strip.children)).forEach((n) => strip.appendChild(n));
+    return;
+  }
+
+  try {
+    const files = [];
+    let pageToken = undefined;
+
+    do {
+      const params = new URLSearchParams();
+      params.set("pageSize", "1000");
+      params.set("fields", "nextPageToken,files(id,name,mimeType)");
+      params.set("q", `'${folderId}' in parents and mimeType contains 'image/' and trashed = false`);
+      params.set("key", apiKey);
+      if (pageToken) params.set("pageToken", pageToken);
+
+      const url = `https://www.googleapis.com/drive/v3/files?${params.toString()}`;
+      const res = await fetch(url, { cache: "no-store" });
+      if (!res.ok) throw new Error(`Drive API error (${res.status})`);
+
+      const json = await res.json();
+      if (Array.isArray(json.files)) files.push(...json.files);
+      pageToken = json.nextPageToken;
+    } while (pageToken);
+
+    if (files.length === 0) throw new Error("No images found in Drive folder");
+
+    shuffleArrayInPlace(files);
+
+    const imgs = files.map((f, idx) => {
+      const img = document.createElement("img");
+      const name = String(f.name || `Photo ${idx + 1}`);
+      img.alt = name.replace(/\.[a-z0-9]+$/i, "");
+      img.loading = "lazy";
+      img.decoding = "async";
+      img.referrerPolicy = "no-referrer";
+
+      const fileId = f.id;
+      img.src = `https://drive.google.com/thumbnail?id=${encodeURIComponent(fileId)}&sz=w800`;
+      img.dataset.fullsrc = `https://drive.google.com/uc?export=view&id=${encodeURIComponent(fileId)}`;
+      img.dataset.driveId = fileId;
+      return img;
+    });
+
+    strip.replaceChildren(...imgs);
+    decorateGalleryThumbnails(strip);
+  } catch (err) {
+    console.warn("Gallery: failed to load from Google Drive; using local fallback.", err);
+    decorateGalleryThumbnails(strip);
+    shuffleArrayInPlace(Array.from(strip.children)).forEach((n) => strip.appendChild(n));
+  }
+}
+
 function initGalleryLightbox() {
   const strip = $("#galleryStrip");
   const lightbox = $("#lightbox");
@@ -143,9 +228,6 @@ function initGalleryLightbox() {
   const counter = $("#lightboxCounter");
 
   if (!strip || !lightbox || !stage || !lightboxImage || !counter) return;
-
-  const thumbnails = Array.from(strip.querySelectorAll("img"));
-  if (thumbnails.length === 0) return;
 
   const closeEls = Array.from(lightbox.querySelectorAll("[data-lightbox-close]"));
   const closeBtn = lightbox.querySelector(".lightbox-close");
@@ -156,8 +238,10 @@ function initGalleryLightbox() {
   let isOpen = false;
   let currentIndex = 0;
   let lastFocused = null;
+  /** @type {HTMLImageElement[]} */
+  let currentThumbs = [];
 
-  const modIndex = (n) => (n + thumbnails.length) % thumbnails.length;
+  const modIndex = (n) => (n + currentThumbs.length) % currentThumbs.length;
 
   function setOpen(open) {
     isOpen = open;
@@ -177,19 +261,24 @@ function initGalleryLightbox() {
   }
 
   function show(index) {
+    if (currentThumbs.length === 0) return;
     currentIndex = modIndex(index);
-    const img = thumbnails[currentIndex];
-    lightboxImage.src = img.currentSrc || img.src;
+    const img = currentThumbs[currentIndex];
+    lightboxImage.src = img.dataset.fullsrc || img.currentSrc || img.src;
     lightboxImage.alt = img.alt || `Gallery image ${currentIndex + 1}`;
-    counter.textContent = `${currentIndex + 1} / ${thumbnails.length}`;
+    counter.textContent = `${currentIndex + 1} / ${currentThumbs.length}`;
 
-    const next = thumbnails[modIndex(currentIndex + 1)];
-    const prev = thumbnails[modIndex(currentIndex - 1)];
-    new Image().src = next.currentSrc || next.src;
-    new Image().src = prev.currentSrc || prev.src;
+    const next = currentThumbs[modIndex(currentIndex + 1)];
+    const prev = currentThumbs[modIndex(currentIndex - 1)];
+    new Image().src = next.dataset.fullsrc || next.currentSrc || next.src;
+    new Image().src = prev.dataset.fullsrc || prev.currentSrc || prev.src;
   }
 
-  function openAt(index) {
+  function openAt(imgEl) {
+    currentThumbs = Array.from(strip.querySelectorAll("img"));
+    if (currentThumbs.length === 0) return;
+
+    const index = Math.max(0, currentThumbs.indexOf(imgEl));
     show(index);
     if (!isOpen) {
       setOpen(true);
@@ -248,19 +337,21 @@ function initGalleryLightbox() {
     }
   }
 
-  for (const [i, img] of thumbnails.entries()) {
-    img.tabIndex = 0;
-    img.setAttribute("role", "button");
-    img.setAttribute("aria-label", `${img.alt || "Open gallery image"} (opens viewer)`);
+  decorateGalleryThumbnails(strip);
 
-    img.addEventListener("click", () => openAt(i));
-    img.addEventListener("keydown", (e) => {
-      if (e.key === "Enter" || e.key === " ") {
-        e.preventDefault();
-        openAt(i);
-      }
-    });
-  }
+  strip.addEventListener("click", (e) => {
+    const img = e.target?.closest?.("img");
+    if (!img || !strip.contains(img)) return;
+    openAt(img);
+  });
+
+  strip.addEventListener("keydown", (e) => {
+    if (e.key !== "Enter" && e.key !== " ") return;
+    const img = e.target?.closest?.("img");
+    if (!img || !strip.contains(img)) return;
+    e.preventDefault();
+    openAt(img);
+  });
 
   for (const el of closeEls) el.addEventListener("click", close);
   prevBtn?.addEventListener("click", prev);
@@ -388,3 +479,4 @@ function initStars() {
 
 initStars();
 initGalleryLightbox();
+initGalleryDrive();

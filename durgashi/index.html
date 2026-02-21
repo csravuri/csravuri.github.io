@@ -8,12 +8,15 @@
     <link rel="stylesheet" href="style.css">
 </head>
 <body>
-    <canvas id="star-canvas"></canvas>
+    <div class="top-section">
+        <canvas id="star-canvas"></canvas>
+        <h1>Ravuri's Wedding Invitation</h1>
+    </div>
+
     <img src="imgs/banana-tree.png" class="banana-tree left">
     <img src="imgs/banana-tree.png" class="banana-tree right">
+
     <div class="invitation-container">
-        <div class="family-name">Ravuri's</div>
-        <h1>Wedding Invitation</h1>
         <div class="names">
             Durga Sai &amp; Ashiervachita
         </div>
@@ -22,24 +25,45 @@
                 <h2>Wedding</h2>
                 <p>Date: 11 March 2026, 11:06pm</p>
                 <p>Venue: TTD Function hall, Tirumala, Tirupati, Andhra Pradesh, India.</p>
+                <a href="#">RSVP</a>
+                <a href="https://maps.google.com/?q=TTD+Function+hall,Tirumala,Tirupati,Andhra+Pradesh,India" target="_blank">View on Map</a>
             </div>
             <div class="event">
                 <h2>Reception</h2>
                 <p>Date: 14 March 2026, 10am</p>
                 <p>Venue: Sajja function hall, GBC Road, Ponnur, Guntur, Andhra Pradesh, India.</p>
+                <a href="#">RSVP</a>
+                <a href="https://maps.google.com/?q=Sajja+function+hall,GBC+Road,Ponnur,Guntur,Andhra+Pradesh,India" target="_blank">View on Map</a>
+            </div>
+            <div class="event">
+                <h2>Home Address</h2>
+                <p>Near Japrada Appratment, Canal Road, Gajulapalem, Ponnur, Guntur, Andhra Pradesh, India.</p>
+                <a href="https://maps.google.com/?q=Japrada+Appratment,Canal+Road,Gajulapalem,Ponnur,Guntur,Andhra+Pradesh,India" target="_blank">View on Map</a>
             </div>
         </div>
-        <div class="hashtag">#durgashi</div>
     </div>
+
+    <div class="gallery-container">
+        <img src="../img/portfolio-1.jpg" alt="Gallery Image">
+        <img src="../img/portfolio-2.jpg" alt="Gallery Image">
+        <img src="../img/portfolio-3.jpg" alt="Gallery Image">
+        <img src="../img/portfolio-4.jpg" alt="Gallery Image">
+        <img src="../img/portfolio-5.jpg" alt="Gallery Image">
+        <img src="../img/portfolio-6.jpg" alt="Gallery Image">
+    </div>
+
+    <div class="hashtag">#durgashi</div>
+
     <script>
         const canvas = document.getElementById('star-canvas');
         const ctx = canvas.getContext('2d');
+        const topSection = document.querySelector('.top-section');
 
-        canvas.width = window.innerWidth;
-        canvas.height = window.innerHeight;
+        canvas.width = topSection.offsetWidth;
+        canvas.height = topSection.offsetHeight;
 
         const stars = [];
-        const numStars = 200;
+        const numStars = 100;
 
         for (let i = 0; i < numStars; i++) {
             stars.push({
@@ -83,8 +107,8 @@
         animate();
 
         window.addEventListener('resize', () => {
-            canvas.width = window.innerWidth;
-            canvas.height = window.innerHeight;
+            canvas.width = topSection.offsetWidth;
+            canvas.height = topSection.offsetHeight;
         });
     </script>
 </body>

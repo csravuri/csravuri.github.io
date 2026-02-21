@@ -2,10 +2,21 @@ body, html {
     margin: 0;
     padding: 0;
     height: 100%;
-    overflow: hidden;
+    background: linear-gradient(to bottom, #ffffe0, #ffa07a);
+    color: #333;
+    font-family: 'Merriweather', serif;
+    overflow-x: hidden;
+}
+
+.top-section {
+    position: relative;
+    height: 20vh;
     background-color: #000033;
     color: #fff;
-    font-family: 'Merriweather', serif;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    text-align: center;
 }
 
 #star-canvas {
@@ -17,60 +28,68 @@ body, html {
     z-index: 1;
 }
 
+.top-section h1 {
+    position: relative;
+    z-index: 2;
+    font-family: 'Dancing Script', cursive;
+    font-size: 3em;
+}
+
 .invitation-container {
     position: relative;
     z-index: 3;
     text-align: center;
-    padding-top: 100px;
-    display: flex;
-    flex-direction: column;
-    justify-content: center;
-    align-items: center;
-    height: 100%;
-}
-
-.family-name {
-    font-size: 1.5em;
-    margin-bottom: 20px;
+    padding: 20px;
 }
 
 .names {
     font-family: 'Dancing Script', cursive;
-    font-size: 4em;
+    font-size: 5em;
     margin: 20px 0;
-    color: #FFD700;
+    color: #c71585; 
 }
 
 .events {
-    margin-top: 50px;
+    margin-top: 20px;
     display: flex;
-    justify-content: space-around;
-    width: 80%;
+    flex-wrap: wrap;
+    justify-content: center;
+    gap: 20px;
 }
 
 .event {
-    margin-bottom: 20px;
     padding: 20px;
-    border: 1px solid #FFD700;
+    border: 1px solid #c71585;
     border-radius: 10px;
-    background-color: rgba(0, 0, 51, 0.7);
+    background-color: rgba(255, 255, 255, 0.5);
+    width: 300px;
 }
 
 .event h2 {
-    color: #FFD700;
+    color: #c71585;
+}
+
+.event a {
+    color: #c71585;
+    text-decoration: none;
+    margin-top: 10px;
+    display: inline-block;
+    border: 1px solid #c71585;
+    padding: 5px 10px;
+    border-radius: 5px;
 }
 
 .hashtag {
     margin-top: 30px;
     font-size: 1.5em;
     font-family: 'Dancing Script', cursive;
-    color: #FFD700;
+    color: #c71585;
 }
 
 .banana-tree {
-    position: absolute;
+    position: fixed;
     bottom: 0;
-    height: 80%;
+    height: 80vh;
     z-index: 2;
 }
 
@@ -81,4 +100,20 @@ body, html {
 .banana-tree.right {
     right: 0;
     transform: scaleX(-1);
+}
+
+.gallery-container {
+    height: 20vh;
+    background-color: #333;
+    color: #fff;
+    text-align: center;
+    padding: 20px;
+    overflow-x: scroll;
+    white-space: nowrap;
+}
+
+.gallery-container img {
+    height: 15vh;
+    margin: 0 10px;
+    border-radius: 5px;
 }

@@ -252,10 +252,48 @@ function initGalleryLightbox() {
   let isOpen = false;
   let currentIndex = 0;
   let lastFocused = null;
+  let zoomScale = 1;
+  let panX = 0;
+  let panY = 0;
   /** @type {HTMLImageElement[]} */
   let currentThumbs = [];
 
   const modIndex = (n) => (n + currentThumbs.length) % currentThumbs.length;
+
+  function clampPan() {
+    const stageRect = stage.getBoundingClientRect();
+    const imgRect = lightboxImage.getBoundingClientRect();
+    const baseWidth = imgRect.width / zoomScale;
+    const baseHeight = imgRect.height / zoomScale;
+    const scaledWidth = baseWidth * zoomScale;
+    const scaledHeight = baseHeight * zoomScale;
+
+    const maxX = Math.max(0, (scaledWidth - stageRect.width) / 2);
+    const maxY = Math.max(0, (scaledHeight - stageRect.height) / 2);
+
+    panX = Math.min(maxX, Math.max(-maxX, panX));
+    panY = Math.min(maxY, Math.max(-maxY, panY));
+  }
+
+  function applyTransform() {
+    if (zoomScale <= 1) {
+      zoomScale = 1;
+      panX = 0;
+      panY = 0;
+    } else {
+      clampPan();
+    }
+    lightboxImage.style.transform = `translate(${panX}px, ${panY}px) scale(${zoomScale})`;
+    lightboxImage.style.cursor = zoomScale > 1 ? "grab" : "zoom-in";
+  }
+
+  function resetTransform() {
+    zoomScale = 1;
+    panX = 0;
+    panY = 0;
+    lightboxImage.style.transform = "";
+    lightboxImage.style.cursor = "zoom-in";
+  }
 
   function setOpen(open) {
     isOpen = open;
@@ -269,6 +307,7 @@ function initGalleryLightbox() {
       lightbox.hidden = true;
       lightbox.setAttribute("aria-hidden", "true");
       document.body.classList.remove("lightbox-open");
+      resetTransform();
       if (lastFocused && typeof lastFocused.focus === "function") lastFocused.focus();
       lastFocused = null;
     }
@@ -290,6 +329,7 @@ function initGalleryLightbox() {
     }
     lightboxImage.alt = img.alt || `Gallery image ${currentIndex + 1}`;
     counter.textContent = `${currentIndex + 1} / ${currentThumbs.length}`;
+    resetTransform();
 
     const next = currentThumbs[modIndex(currentIndex + 1)];
     const prev = currentThumbs[modIndex(currentIndex - 1)];
@@ -380,20 +420,43 @@ function initGalleryLightbox() {
   let activePointerId = null;
   let startX = 0;
   let startY = 0;
+  let startPanX = 0;
+  let startPanY = 0;
+  let isPanning = false;
 
   stage.addEventListener("pointerdown", (e) => {
     if (!isOpen) return;
     if (e.pointerType === "mouse" && e.button !== 0) return;
+    if (e.target?.closest?.(".lightbox-nav, .lightbox-close")) return;
     activePointerId = e.pointerId;
     startX = e.clientX;
     startY = e.clientY;
-    stage.setPointerCapture?.(e.pointerId);
+    startPanX = panX;
+    startPanY = panY;
+    isPanning = zoomScale > 1;
+    if (isPanning) stage.setPointerCapture?.(e.pointerId);
+  });
+
+  stage.addEventListener("pointermove", (e) => {
+    if (!isOpen) return;
+    if (activePointerId !== e.pointerId) return;
+    if (!isPanning) return;
+    const dx = e.clientX - startX;
+    const dy = e.clientY - startY;
+    panX = startPanX + dx;
+    panY = startPanY + dy;
+    applyTransform();
   });
 
   stage.addEventListener("pointerup", (e) => {
     if (!isOpen) return;
     if (activePointerId !== e.pointerId) return;
     activePointerId = null;
+    if (isPanning) {
+      isPanning = false;
+      try { stage.releasePointerCapture?.(e.pointerId); } catch (err) {}
+      return;
+    }
 
     const dx = e.clientX - startX;
     const dy = e.clientY - startY;
@@ -409,7 +472,33 @@ function initGalleryLightbox() {
 
   stage.addEventListener("pointercancel", () => {
     activePointerId = null;
+    isPanning = false;
   });
+
+  stage.addEventListener(
+    "wheel",
+    (e) => {
+      if (!isOpen) return;
+      e.preventDefault();
+
+      const rect = stage.getBoundingClientRect();
+      const originX = e.clientX - rect.left - rect.width / 2;
+      const originY = e.clientY - rect.top - rect.height / 2;
+
+      const delta = e.deltaY;
+      const direction = delta > 0 ? -1 : 1;
+      const step = e.ctrlKey ? 0.18 : 0.12;
+      const newScale = Math.min(4, Math.max(1, zoomScale + direction * step));
+      if (newScale === zoomScale) return;
+
+      const factor = newScale / zoomScale;
+      panX = panX + originX * (1 - factor);
+      panY = panY + originY * (1 - factor);
+      zoomScale = newScale;
+      applyTransform();
+    },
+    { passive: false }
+  );
 }
 
 function initGalleryNav() {

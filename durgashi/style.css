@@ -26,17 +26,20 @@ body {
     font-family: var(--font-body);
     overflow-x: hidden;
     background:
-        radial-gradient(1100px 520px at 50% 22vh, rgba(255, 211, 137, 0.65), transparent 62%),
-        radial-gradient(900px 460px at 12% 86%, rgba(72, 169, 92, 0.38), transparent 64%),
-        radial-gradient(900px 460px at 88% 86%, rgba(72, 169, 92, 0.34), transparent 64%),
+        radial-gradient(1100px 520px at 50% 22%, rgba(255, 210, 140, 0.55), transparent 62%),
+        radial-gradient(900px 460px at 12% 86%, rgba(72, 169, 92, 0.40), transparent 64%),
+        radial-gradient(900px 460px at 88% 86%, rgba(72, 169, 92, 0.36), transparent 64%),
         linear-gradient(
             to bottom,
-            #07112e 0%,
-            #07112e 20vh,
-            #ffefb7 30vh,
-            #f6b06b 52vh,
-            #c98246 76vh,
-            #6a4026 100%
+            #060a1a 0%,
+            #0b1633 12%,
+            #13264a 24%,
+            #2b4870 36%,
+            #ffcfa0 50%,
+            #f2a060 62%,
+            #b46b38 74%,
+            #6b3f22 84%,
+            #2f6a3c 100%
         );
 }
 
@@ -536,7 +539,7 @@ body.lightbox-open {
 .hashtag {
     font-family: var(--font-display);
     font-size: 34px;
-    color: var(--accent);
+    color: #f6f1e1;
     text-shadow: 0 1px 0 rgba(255, 255, 255, 0.35);
 }
 

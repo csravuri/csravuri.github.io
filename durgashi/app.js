@@ -86,6 +86,19 @@ function decorateGalleryThumbnails(strip) {
     img.tabIndex = 0;
     img.setAttribute("role", "button");
     img.setAttribute("aria-label", `${img.alt || "Open gallery image"} (opens viewer)`);
+    // prevent native HTML drag (which interferes with pointer-drag scrolling)
+    img.draggable = false;
+    // attach per-thumbnail click handler if lightbox open function is available
+    if (typeof strip._openAt === 'function') {
+      img.addEventListener('click', (e) => {
+        if (strip.dataset.wasDragging) {
+          const ts = Number(strip.dataset.wasDragging) || 0;
+          delete strip.dataset.wasDragging;
+          if (Date.now() - ts < 120) return;
+        }
+        strip._openAt(img);
+      });
+    }
   }
 }
 
@@ -337,13 +350,9 @@ function initGalleryLightbox() {
     }
   }
 
+  // expose openAt for decorateGalleryThumbnails so handlers can be attached after images are replaced
+  strip._openAt = openAt;
   decorateGalleryThumbnails(strip);
-
-  strip.addEventListener("click", (e) => {
-    const img = e.target?.closest?.("img");
-    if (!img || !strip.contains(img)) return;
-    openAt(img);
-  });
 
   strip.addEventListener("keydown", (e) => {
     if (e.key !== "Enter" && e.key !== " ") return;
@@ -391,6 +400,76 @@ function initGalleryLightbox() {
   stage.addEventListener("pointercancel", () => {
     activePointerId = null;
   });
+}
+
+function initGalleryNav() {
+  const strip = $("#galleryStrip");
+  if (!strip) return;
+
+  const container = strip.closest('.gallery-container') || strip.parentElement;
+  const prevBtn = container.querySelector('.gallery-nav.prev');
+  const nextBtn = container.querySelector('.gallery-nav.next');
+  if (!prevBtn || !nextBtn) return;
+
+  const scrollAmount = () => Math.max(strip.clientWidth * 0.6, 240);
+
+  function updateButtons() {
+    prevBtn.disabled = strip.scrollLeft <= 0;
+    nextBtn.disabled = strip.scrollLeft + strip.clientWidth >= strip.scrollWidth - 1;
+  }
+
+  prevBtn.addEventListener('click', () => {
+    strip.scrollBy({ left: -scrollAmount(), behavior: 'smooth' });
+    setTimeout(updateButtons, 420);
+  });
+
+  nextBtn.addEventListener('click', () => {
+    strip.scrollBy({ left: scrollAmount(), behavior: 'smooth' });
+    setTimeout(updateButtons, 420);
+  });
+
+  // Pointer-drag to scroll (keeps drag-to-scroll behavior)
+  let dragPointerId = null;
+  let dragStartX = 0;
+  let dragStartScroll = 0;
+  let isDragging = false;
+
+  strip.addEventListener('pointerdown', (e) => {
+    if (e.pointerType === 'mouse' && e.button !== 0) return;
+    dragPointerId = e.pointerId;
+    dragStartX = e.clientX;
+    dragStartScroll = strip.scrollLeft;
+    isDragging = false;
+  });
+
+  strip.addEventListener('pointermove', (e) => {
+    if (dragPointerId !== e.pointerId) return;
+    const dx = e.clientX - dragStartX;
+    if (!isDragging && Math.abs(dx) > 6) {
+      isDragging = true;
+      strip.dataset.wasDragging = String(Date.now());
+      strip.setPointerCapture?.(e.pointerId);
+    }
+    if (!isDragging) return;
+    strip.scrollLeft = Math.max(0, Math.min(strip.scrollWidth - strip.clientWidth, dragStartScroll - dx));
+  });
+
+  const endDrag = (e) => {
+    if (dragPointerId !== e.pointerId) return;
+    if (isDragging) {
+      try { strip.releasePointerCapture?.(e.pointerId); } catch (err) {}
+    }
+    dragPointerId = null;
+    isDragging = false;
+    setTimeout(() => { delete strip.dataset.wasDragging; }, 80);
+    setTimeout(updateButtons, 120);
+  };
+
+  strip.addEventListener('pointerup', endDrag);
+  strip.addEventListener('pointercancel', endDrag);
+
+  strip.addEventListener('scroll', updateButtons, { passive: true });
+  updateButtons();
 }
 
 async function initData() {
@@ -479,4 +558,5 @@ function initStars() {
 
 initStars();
 initGalleryLightbox();
-initGalleryDrive();
+// start drive loader and then initialize gallery navigation buttons
+initGalleryDrive().finally(() => initGalleryNav());

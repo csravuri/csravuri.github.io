@@ -12,6 +12,10 @@
     --shadow: 0 14px 34px rgba(18, 9, 5, 0.18);
 }
 
+*, *::before, *::after {
+    box-sizing: border-box;
+}
+
 html, body {
     height: 100%;
 }
@@ -41,6 +45,7 @@ body {
     display: flex;
     flex-direction: column;
     position: relative;
+    width: 100%;
 }
 
 .page::before {
@@ -64,6 +69,7 @@ body {
     place-items: center;
     text-align: center;
     color: #fff;
+    width: 100%;
     background:
         radial-gradient(900px 420px at 50% 110%, rgba(255, 188, 110, 0.42), transparent 68%),
         linear-gradient(to bottom, #020a22, #060f2a 70%, #0b1735);

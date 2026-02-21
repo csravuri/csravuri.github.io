@@ -134,29 +134,30 @@ function render(data) {
 function initStars() {
   const canvas = /** @type {HTMLCanvasElement} */ ($("#star-canvas"));
   const ctx = canvas.getContext("2d");
-  const topSection = $(".top-section");
 
   const prefersReducedMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
   if (prefersReducedMotion) return;
 
   const stars = [];
   const numStars = 110;
+  let width = 0;
+  let height = 0;
 
   function resizeCanvas() {
     const dpr = Math.min(window.devicePixelRatio || 1, 2);
-    const rect = topSection.getBoundingClientRect();
+    const rect = canvas.getBoundingClientRect();
+    width = rect.width;
+    height = rect.height;
 
-    canvas.style.width = `${rect.width}px`;
-    canvas.style.height = `${rect.height}px`;
-    canvas.width = Math.floor(rect.width * dpr);
-    canvas.height = Math.floor(rect.height * dpr);
+    canvas.width = Math.floor(width * dpr);
+    canvas.height = Math.floor(height * dpr);
     ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
 
     stars.length = 0;
     for (let i = 0; i < numStars; i++) {
       stars.push({
-        x: Math.random() * rect.width,
-        y: Math.random() * rect.height,
+        x: Math.random() * width,
+        y: Math.random() * height,
         radius: 0.7 + Math.random() * 1.4,
         alpha: 0.25 + Math.random() * 0.75,
         speed: (Math.random() * 0.22 + 0.05) * (Math.random() < 0.5 ? -1 : 1),
@@ -165,8 +166,7 @@ function initStars() {
   }
 
   function tick() {
-    const rect = topSection.getBoundingClientRect();
-    ctx.clearRect(0, 0, rect.width, rect.height);
+    ctx.clearRect(0, 0, width, height);
 
     for (const s of stars) {
       s.alpha += s.speed;
@@ -189,8 +189,13 @@ function initStars() {
 
   resizeCanvas();
   tick();
+
+  if ("ResizeObserver" in window) {
+    const ro = new ResizeObserver(() => resizeCanvas());
+    ro.observe(canvas);
+  }
+
   window.addEventListener("resize", resizeCanvas, { passive: true });
 }
 
 initStars();
-

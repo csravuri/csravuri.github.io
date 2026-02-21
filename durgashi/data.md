@@ -1,11 +1,14 @@
 <StyleOfPage>
-* South India style wedding web page with animated starts on top 20% of the page, on that page to write "Ravuri's Wedding Invitation"
+* South India style wedding web page with animated stars on top 20% of the page, on that page to write "Ravuri's Wedding Invitation"
+
+* Just below the sky with starts use Use light backgrounds like yellow, orange, transition should be smooth from sky to earth, in between use colurs like orange, for earth gardually turn to brown, with greenary at some parts
+
 * banaana trees on left and right side of the page
 
 * On the center Groom and bride names with good styling.
 * in the bottom just below goom and bride, event names, time and venues. We intend to add RSVP and google map links to these events for easy navigation
 * Need a section for scrolling gallary of images on the bottom 20% of page
-* Use light backgrounds like yellow, orange
+
 * user dark font colours different types of text
 * #durgashi on the bottom of the page.
 

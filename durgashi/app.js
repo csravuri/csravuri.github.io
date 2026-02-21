@@ -219,7 +219,8 @@ async function initGalleryDrive() {
 
       const fileId = f.id;
       img.src = `https://drive.google.com/thumbnail?id=${encodeURIComponent(fileId)}&sz=w800`;
-      img.dataset.fullsrc = `https://drive.google.com/uc?export=view&id=${encodeURIComponent(fileId)}`;
+      // Use a larger thumbnail for the lightbox to avoid Drive's uc endpoint issues.
+      img.dataset.fullsrc = `https://drive.google.com/thumbnail?id=${encodeURIComponent(fileId)}&sz=w2000`;
       img.dataset.driveId = fileId;
       return img;
     });
@@ -277,7 +278,16 @@ function initGalleryLightbox() {
     if (currentThumbs.length === 0) return;
     currentIndex = modIndex(index);
     const img = currentThumbs[currentIndex];
-    lightboxImage.src = img.dataset.fullsrc || img.currentSrc || img.src;
+    const thumbSrc = img.currentSrc || img.src;
+    const fullSrc = img.dataset.fullsrc || thumbSrc;
+    lightboxImage.onerror = null;
+    lightboxImage.src = fullSrc;
+    if (fullSrc !== thumbSrc) {
+      lightboxImage.onerror = () => {
+        lightboxImage.onerror = null;
+        lightboxImage.src = thumbSrc;
+      };
+    }
     lightboxImage.alt = img.alt || `Gallery image ${currentIndex + 1}`;
     counter.textContent = `${currentIndex + 1} / ${currentThumbs.length}`;
 

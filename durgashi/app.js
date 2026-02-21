@@ -423,38 +423,110 @@ function initGalleryLightbox() {
   let startPanX = 0;
   let startPanY = 0;
   let isPanning = false;
+  let isPinching = false;
+  let pinchStartDist = 0;
+  let pinchStartScale = 1;
+  let pinchStartPanX = 0;
+  let pinchStartPanY = 0;
+  let pinchStartCenterX = 0;
+  let pinchStartCenterY = 0;
+  const activePointers = new Map();
+
+  function getDistance(a, b) {
+    const dx = a.x - b.x;
+    const dy = a.y - b.y;
+    return Math.hypot(dx, dy);
+  }
+
+  function getCenter(a, b) {
+    return { x: (a.x + b.x) / 2, y: (a.y + b.y) / 2 };
+  }
 
   stage.addEventListener("pointerdown", (e) => {
     if (!isOpen) return;
     if (e.pointerType === "mouse" && e.button !== 0) return;
     if (e.target?.closest?.(".lightbox-nav, .lightbox-close")) return;
+    activePointers.set(e.pointerId, { x: e.clientX, y: e.clientY });
     activePointerId = e.pointerId;
     startX = e.clientX;
     startY = e.clientY;
     startPanX = panX;
     startPanY = panY;
     isPanning = zoomScale > 1;
-    if (isPanning) stage.setPointerCapture?.(e.pointerId);
+    stage.setPointerCapture?.(e.pointerId);
+
+    if (activePointers.size === 2) {
+      const pts = Array.from(activePointers.values());
+      const rect = stage.getBoundingClientRect();
+      const center = getCenter(pts[0], pts[1]);
+      pinchStartCenterX = center.x - rect.left - rect.width / 2;
+      pinchStartCenterY = center.y - rect.top - rect.height / 2;
+      pinchStartDist = getDistance(pts[0], pts[1]);
+      pinchStartScale = zoomScale;
+      pinchStartPanX = panX;
+      pinchStartPanY = panY;
+      isPinching = true;
+      isPanning = false;
+      lightboxImage.style.cursor = "grabbing";
+    } else if (isPanning) {
+      lightboxImage.style.cursor = "grabbing";
+    }
   });
 
   stage.addEventListener("pointermove", (e) => {
     if (!isOpen) return;
+    if (!activePointers.has(e.pointerId)) return;
+    activePointers.set(e.pointerId, { x: e.clientX, y: e.clientY });
+
+    if (isPinching && activePointers.size >= 2) {
+      const pts = Array.from(activePointers.values());
+      const rect = stage.getBoundingClientRect();
+      const center = getCenter(pts[0], pts[1]);
+      const centerX = center.x - rect.left - rect.width / 2;
+      const centerY = center.y - rect.top - rect.height / 2;
+      const dist = getDistance(pts[0], pts[1]);
+      if (pinchStartDist > 0) {
+        const targetScale = pinchStartScale * (dist / pinchStartDist);
+        const newScale = Math.min(4, Math.max(1, targetScale));
+        const factor = newScale / pinchStartScale;
+        panX = pinchStartPanX + pinchStartCenterX * (1 - factor) + (centerX - pinchStartCenterX);
+        panY = pinchStartPanY + pinchStartCenterY * (1 - factor) + (centerY - pinchStartCenterY);
+        zoomScale = newScale;
+        applyTransform();
+      }
+      return;
+    }
+
     if (activePointerId !== e.pointerId) return;
     if (!isPanning) return;
     const dx = e.clientX - startX;
     const dy = e.clientY - startY;
-    panX = startPanX + dx;
-    panY = startPanY + dy;
+    const panSpeed = Math.max(1.5, zoomScale * 2.2);
+    panX = startPanX + dx * panSpeed;
+    panY = startPanY + dy * panSpeed;
     applyTransform();
   });
 
   stage.addEventListener("pointerup", (e) => {
     if (!isOpen) return;
+    if (!activePointers.has(e.pointerId)) return;
+    activePointers.delete(e.pointerId);
+    const wasPinching = isPinching;
+    if (isPinching && activePointers.size < 2) {
+      isPinching = false;
+      lightboxImage.style.cursor = zoomScale > 1 ? "grab" : "zoom-in";
+    }
+    if (wasPinching) {
+      try { stage.releasePointerCapture?.(e.pointerId); } catch (err) {}
+      activePointerId = null;
+      return;
+    }
     if (activePointerId !== e.pointerId) return;
     activePointerId = null;
     if (isPanning) {
       isPanning = false;
       try { stage.releasePointerCapture?.(e.pointerId); } catch (err) {}
+      lightboxImage.style.cursor = "grab";
       return;
     }
 
@@ -471,8 +543,10 @@ function initGalleryLightbox() {
   });
 
   stage.addEventListener("pointercancel", () => {
+    activePointers.clear();
     activePointerId = null;
     isPanning = false;
+    isPinching = false;
   });
 
   stage.addEventListener(
@@ -569,6 +643,13 @@ function initGalleryNav() {
 
   strip.addEventListener('scroll', updateButtons, { passive: true });
   updateButtons();
+
+  // Ensure buttons enable after images load/resize (Drive images load async)
+  strip.addEventListener('load', updateButtons, true);
+  if ("ResizeObserver" in window) {
+    const ro = new ResizeObserver(() => updateButtons());
+    ro.observe(strip);
+  }
 }
 
 async function initData() {

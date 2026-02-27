@@ -56,20 +56,98 @@ function mapsUrl(query) {
   return `https://www.google.com/maps/search/?api=1&query=${q}`;
 }
 
-function mailtoRsvp({ familyName, couple, eventName }) {
-  const subject = `RSVP - ${familyName} Wedding (${eventName})`;
-  const body = [
-    `Couple: ${couple}`,
-    `Event: ${eventName}`,
-    ``,
-    `Name:`,
-    `Attending: Yes / No`,
-    `Guests:`,
-    ``,
-    `Message:`,
-  ].join("\n");
+const IST_OFFSET_MS = 5.5 * 60 * 60 * 1000;
 
-  return `mailto:?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(body)}`;
+function parseEventDate(dateText) {
+  if (!dateText) return null;
+  const normalized = dateText
+    .replace(/,/g, " ")
+    .replace(/\s+/g, " ")
+    .replace(/(\d)\.(\d)/g, "$1:$2")
+    .trim()
+    .toLowerCase();
+
+  const match = normalized.match(
+    /(\d{1,2})\s+([a-z]+)\s+(\d{4})(?:\s+(\d{1,2})(?::(\d{2}))?\s*(am|pm)?)?/
+  );
+  if (!match) return null;
+
+  const day = Number(match[1]);
+  const monthName = match[2];
+  const year = Number(match[3]);
+  const hourRaw = match[4] ? Number(match[4]) : 0;
+  const minuteRaw = match[5] ? Number(match[5]) : 0;
+  const meridiem = match[6] || "";
+
+  const months = {
+    jan: 0,
+    january: 0,
+    feb: 1,
+    february: 1,
+    mar: 2,
+    march: 2,
+    apr: 3,
+    april: 3,
+    may: 4,
+    jun: 5,
+    june: 5,
+    jul: 6,
+    july: 6,
+    aug: 7,
+    august: 7,
+    sep: 8,
+    sept: 8,
+    september: 8,
+    oct: 9,
+    october: 9,
+    nov: 10,
+    november: 10,
+    dec: 11,
+    december: 11,
+  };
+
+  if (!(monthName in months)) return null;
+
+  let hour = hourRaw;
+  if (meridiem === "pm" && hour < 12) hour += 12;
+  if (meridiem === "am" && hour === 12) hour = 0;
+
+  const utcMs = Date.UTC(year, months[monthName], day, hour, minuteRaw) - IST_OFFSET_MS;
+  return new Date(utcMs);
+}
+
+function formatCountdown(diffMs) {
+  if (diffMs <= 0) return { text: "Started", started: true };
+  const totalSeconds = Math.floor(diffMs / 1000);
+  const days = Math.floor(totalSeconds / 86400);
+  const hours = Math.floor((totalSeconds % 86400) / 3600);
+  const minutes = Math.floor((totalSeconds % 3600) / 60);
+  const seconds = totalSeconds % 60;
+  return { text: `${days}d ${hours}h ${minutes}m ${seconds}s`, started: false };
+}
+
+let countdownIntervalId = null;
+
+function initCountdowns() {
+  const countdowns = Array.from(document.querySelectorAll(".event-countdown"));
+  if (countdowns.length === 0) return;
+
+  const update = () => {
+    const now = Date.now();
+    for (const el of countdowns) {
+      const dateText = el.dataset.date || "";
+      const target = parseEventDate(dateText);
+      const valueEl = el.querySelector(".countdown-value");
+      if (!valueEl || !target) continue;
+      const { text, started } = formatCountdown(target.getTime() - now);
+      valueEl.textContent = text;
+      el.classList.toggle("is-started", started);
+    }
+  };
+
+  update();
+  if (countdownIntervalId) clearInterval(countdownIntervalId);
+  countdownIntervalId = setInterval(update, 1000);
 }
 
 function shuffleArrayInPlace(arr) {
@@ -103,9 +181,6 @@ function decorateGalleryThumbnails(strip) {
 }
 
 function render(data) {
-  const couple = `${data.groom || "Groom"} & ${data.bride || "Bride"}`;
-  const familyName = data.familyName || "Ravuri";
-
   const heroTitle = $("#heroTitle");
   const names = $("#names");
   const familyLine = $("#familyLine");
@@ -129,11 +204,6 @@ function render(data) {
     const actions = document.createElement("div");
     actions.className = "event-actions";
 
-    const rsvp = document.createElement("a");
-    rsvp.className = "btn btn-primary";
-    rsvp.href = mailtoRsvp({ familyName, couple, eventName: ev.name });
-    rsvp.textContent = "RSVP";
-
     const map = document.createElement("a");
     map.className = "btn btn-ghost";
     map.href = mapsUrl(venueText || ev.name);
@@ -141,10 +211,18 @@ function render(data) {
     map.rel = "noopener noreferrer";
     map.textContent = "Google Map";
 
-    actions.appendChild(rsvp);
     actions.appendChild(map);
 
     card.appendChild(title);
+
+    const lowerName = ev.name.toLowerCase();
+    if ((lowerName.includes("wedding") || lowerName.includes("reception")) && ev.date) {
+      const countdown = document.createElement("div");
+      countdown.className = "event-countdown";
+      countdown.dataset.date = ev.date;
+      countdown.innerHTML = `<span class="countdown-label">Countdown</span><span class="countdown-value">--</span>`;
+      card.appendChild(countdown);
+    }
 
     if (ev.date) {
       const dateRow = document.createElement("div");
@@ -163,6 +241,8 @@ function render(data) {
     card.appendChild(actions);
     eventsEl.appendChild(card);
   }
+
+  initCountdowns();
 }
 
 async function initGalleryDrive() {
@@ -740,3 +820,4 @@ initStars();
 initGalleryLightbox();
 // start drive loader and then initialize gallery navigation buttons
 initGalleryDrive().finally(() => initGalleryNav());
+initCountdowns();

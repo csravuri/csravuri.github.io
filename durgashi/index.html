@@ -97,6 +97,20 @@
                 <button class="gallery-nav next" type="button" aria-label="Scroll right">›</button>
         </section>
 
+        <section class="share-container" aria-label="Share">
+            <div class="share-header">
+                <h2>Share</h2>
+                <div class="share-hint">Invite friends and family</div>
+            </div>
+                        <div class="share-actions">
+                <button class="btn btn-primary share-btn" type="button" data-share="message">Share Message</button>
+                <button class="btn btn-ghost share-btn" type="button" data-share="file" data-kind="image" data-file="imgs/ravuri-invitation.png">Share Invitation</button>
+                <button class="btn btn-ghost share-btn" type="button" data-share="file" data-kind="image" data-file="imgs/ravuri-marriage-card.jpg">Share Marriage Card</button>
+                <button class="btn btn-ghost share-btn" type="button" data-share="file" data-kind="video" data-file="videos/ravuri-invitation-video.mp4">Share Invitation Video</button>
+            </div>
+            <div class="share-note" id="shareNote" aria-live="polite"></div>
+        </section>
+
         <footer class="footer">
             <div class="hashtag">#durgashi</div>
         </footer>
@@ -118,3 +132,4 @@
     <script type="module" src="./app.js"></script>
 </body>
 </html>
+

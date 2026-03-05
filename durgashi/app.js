@@ -732,6 +732,82 @@ function initGalleryNav() {
   }
 }
 
+function buildShareMessage() {
+  const namesText = $("#names")?.textContent?.replace(/\s+/g, " ").trim() || "our wedding";
+  return `రావూరి వారి వివాహ మహోత్సవ ఆహ్వానం
+
+వరుడు: దుర్గా సాయి 
+వధువు: ఆశిర్వచిత
+
+Updates: https://whatsapp.com/channel/0029Vb7a2IGEFeXf7SDvAC3D
+
+Location:  https://maps.app.goo.gl/PPKRR5YVw8ytw4Na8`;
+}
+
+function openWhatsAppWithText(text) {
+  const link = `https://wa.me/?text=${encodeURIComponent(text)}`;
+  window.open(link, "_blank", "noopener");
+}
+
+function setShareNote(message) {
+  const note = $("#shareNote");
+  if (!note) return;
+  note.textContent = message || "";
+}
+
+async function shareFileToWhatsApp(filePath, kind) {
+  if (!navigator.share || !navigator.canShare) {
+    setShareNote("File sharing is not supported on this device.");
+    return;
+  }
+
+  try {
+    const res = await fetch(filePath, { cache: "no-store" });
+    if (!res.ok) throw new Error("File fetch failed");
+    const blob = await res.blob();
+    const filename = (filePath.split("/").pop() || `share.${kind === "video" ? "mp4" : "jpg"}`).split("?")[0];
+    const fallbackType = kind === "video" ? "video/mp4" : "image/jpeg";
+    const file = new File([blob], filename, { type: blob.type || fallbackType });
+
+    if (!navigator.canShare({ files: [file] })) {
+      setShareNote("File sharing is not supported on this device.");
+      return;
+    }
+
+    await navigator.share({
+      files: [file],
+      title: kind === "video" ? "Wedding video" : "Wedding photo",
+      text: kind === "video" ? "Wedding video" : "Wedding photo",
+    });
+    setShareNote("");
+  } catch (err) {
+    setShareNote("Could not load the file to share.");
+  }
+}
+
+function initShareButtons() {
+  const buttons = Array.from(document.querySelectorAll(".share-btn"));
+  if (buttons.length === 0) return;
+
+  for (const btn of buttons) {
+    btn.addEventListener("click", async () => {
+      const action = btn.dataset.share;
+      if (action === "file") {
+        const filePath = btn.dataset.file;
+        const kind = btn.dataset.kind || "image";
+        if (!filePath) {
+          setShareNote("No file configured for this button.");
+          return;
+        }
+        await shareFileToWhatsApp(filePath, kind);
+        return;
+      }
+      setShareNote("");
+      openWhatsAppWithText(buildShareMessage());
+    });
+  }
+}
+
 async function initData() {
   try {
     const res = await fetch("./data.md", { cache: "no-store" });
@@ -820,4 +896,5 @@ initStars();
 initGalleryLightbox();
 // start drive loader and then initialize gallery navigation buttons
 initGalleryDrive().finally(() => initGalleryNav());
+initShareButtons();
 initCountdowns();

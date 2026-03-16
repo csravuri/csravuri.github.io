@@ -230,6 +230,79 @@
         font-size: 14px;
       }
 
+      .ref-note {
+        padding: 0 14px 14px;
+        color: var(--muted);
+        font-size: 13px;
+      }
+
+      .ref-list {
+        padding: 0 6px 8px;
+      }
+
+      details.ref-event {
+        border-top: 1px solid rgba(255, 255, 255, 0.07);
+        padding: 0;
+      }
+
+      details.ref-event:first-child {
+        border-top: none;
+      }
+
+      details.ref-event > summary {
+        list-style: none;
+        cursor: pointer;
+        padding: 12px 10px;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 12px;
+      }
+
+      details.ref-event > summary::-webkit-details-marker {
+        display: none;
+      }
+
+      details.ref-event[open] > summary {
+        background: rgba(255, 255, 255, 0.03);
+      }
+
+      .ref-title {
+        font-size: 14px;
+        color: var(--text);
+      }
+
+      .ref-count {
+        font-size: 12px;
+        color: var(--muted);
+        border: 1px solid var(--border);
+        padding: 6px 10px;
+        border-radius: 999px;
+        white-space: nowrap;
+      }
+
+      .ref-songs {
+        padding: 0 16px 14px;
+      }
+
+      .ref-songs ol {
+        margin: 0;
+        padding-left: 20px;
+        display: grid;
+        gap: 6px;
+      }
+
+      .ref-songs li {
+        color: rgba(255, 255, 255, 0.86);
+        font-size: 14px;
+        line-height: 1.35;
+      }
+
+      .ref-songs .meta {
+        color: var(--muted);
+        font-size: 12px;
+      }
+
       .footer {
         margin-top: 18px;
         color: var(--muted);
@@ -264,6 +337,20 @@
 
       <main class="grid" id="tables"></main>
 
+      <section class="grid" aria-label="Reference songs">
+        <div class="card">
+          <div class="card-header">
+            <h2>These are only for reference purpose</h2>
+            <div class="pill" id="referencePill" hidden></div>
+          </div>
+          <div class="ref-note">
+            This is reference list and dont update.
+          </div>
+          <div class="empty" id="referenceStatus">Loading reference songs…</div>
+          <div class="ref-list" id="referenceList" hidden></div>
+        </div>
+      </section>
+
       <div class="footer">
         Tip: If loading fails due to permissions, open the sheet and ensure it’s publicly accessible (or “Publish to the
         web”).
@@ -290,6 +377,9 @@
       const tablesEl = document.getElementById("tables");
       const refreshBtn = document.getElementById("refreshBtn");
       const openSheetLink = document.getElementById("openSheetLink");
+      const referenceStatusEl = document.getElementById("referenceStatus");
+      const referenceListEl = document.getElementById("referenceList");
+      const referencePillEl = document.getElementById("referencePill");
 
       openSheetLink.href = SHEET_EDIT_URL;
 
@@ -538,6 +628,111 @@
         tablesEl.replaceChildren();
       }
 
+      function renderReferenceSongs(payload) {
+        referenceListEl.replaceChildren();
+
+        const events = Array.isArray(payload?.events) ? payload.events : [];
+        const totalSongs = events.reduce((sum, e) => sum + (Array.isArray(e?.songs) ? e.songs.length : 0), 0);
+
+        if (!events.length) {
+          referencePillEl.hidden = true;
+          referenceStatusEl.textContent = "No reference songs found.";
+          referenceStatusEl.hidden = false;
+          referenceListEl.hidden = true;
+          return;
+        }
+
+        referencePillEl.textContent = `${totalSongs} song${totalSongs === 1 ? "" : "s"}`;
+        referencePillEl.hidden = false;
+
+        for (const evt of events) {
+          const eventName = String(evt?.event ?? "").trim() || "Other";
+          const songs = Array.isArray(evt?.songs) ? evt.songs : [];
+
+          const details = document.createElement("details");
+          details.className = "ref-event";
+
+          const summary = document.createElement("summary");
+
+          const title = document.createElement("span");
+          title.className = "ref-title";
+          title.textContent = eventName;
+
+          const count = document.createElement("span");
+          count.className = "ref-count";
+          count.textContent = `${songs.length} song${songs.length === 1 ? "" : "s"}`;
+
+          summary.appendChild(title);
+          summary.appendChild(count);
+
+          const body = document.createElement("div");
+          body.className = "ref-songs";
+
+          if (!songs.length) {
+            const empty = document.createElement("div");
+            empty.className = "meta";
+            empty.textContent = "No songs listed for this event.";
+            body.appendChild(empty);
+          } else {
+            const ol = document.createElement("ol");
+            for (const s of songs) {
+              const song = String(s?.song ?? "").trim();
+              const movie = String(s?.movie ?? "").trim();
+              const year = s?.year != null && String(s.year).trim() ? String(s.year).trim() : "";
+
+              const li = document.createElement("li");
+              const main = document.createElement("div");
+              main.textContent = song || "—";
+
+              const meta = document.createElement("div");
+              meta.className = "meta";
+              const moviePart = movie ? movie : "—";
+              meta.textContent = year ? `${moviePart} (${year})` : moviePart;
+
+              li.appendChild(main);
+              li.appendChild(meta);
+              ol.appendChild(li);
+            }
+            body.appendChild(ol);
+          }
+
+          details.appendChild(summary);
+          details.appendChild(body);
+          referenceListEl.appendChild(details);
+        }
+
+        referenceStatusEl.hidden = true;
+        referenceListEl.hidden = false;
+      }
+
+      async function loadReferenceSongs() {
+        referenceStatusEl.textContent = "Loading reference songs…";
+        referenceStatusEl.hidden = false;
+        referenceListEl.hidden = true;
+        referencePillEl.hidden = true;
+
+        const candidates = ["./refernce_songs.json", "./reference_songs.json"];
+        let lastErr = null;
+
+        for (const url of candidates) {
+          try {
+            const res = await fetch(url, { cache: "no-store" });
+            if (!res.ok) throw new Error(`${res.status} ${res.statusText}`.trim());
+            const payload = await res.json();
+            renderReferenceSongs(payload);
+            return;
+          } catch (err) {
+            lastErr = err;
+          }
+        }
+
+        const msg = lastErr instanceof Error ? lastErr.message : String(lastErr ?? "Unknown error");
+        referenceStatusEl.textContent = `Failed to load reference songs: ${msg}`;
+        referenceStatusEl.hidden = false;
+        referenceListEl.hidden = true;
+        referencePillEl.hidden = true;
+      }
+
       function renderGroupedTables(records) {
         clearTables();
 
@@ -719,6 +914,7 @@
 
       // Auto-load on open.
       void loadData();
+      void loadReferenceSongs();
     </script>
   </body>
 </html>

@@ -271,6 +271,53 @@
         padding: 0 6px 8px;
       }
 
+      details.ref-card > summary {
+        list-style: none;
+        cursor: pointer;
+      }
+
+      details.ref-card > summary::-webkit-details-marker {
+        display: none;
+      }
+
+      details.ref-card > summary.card-header {
+        border-bottom: none;
+      }
+
+      details.ref-card[open] > summary.card-header {
+        border-bottom: 1px solid var(--border);
+      }
+
+      .ref-summary-right {
+        display: inline-flex;
+        align-items: center;
+        gap: 10px;
+      }
+
+      .ref-chevron {
+        width: 26px;
+        height: 26px;
+        border-radius: 999px;
+        border: 1px solid var(--border);
+        display: grid;
+        place-items: center;
+        color: var(--muted);
+        background: rgba(255, 255, 255, 0.55);
+        flex: 0 0 auto;
+      }
+
+      details.ref-card > summary .ref-chevron::before {
+        content: "▸";
+        font-size: 14px;
+        line-height: 1;
+        transform: translateX(1px);
+      }
+
+      details.ref-card[open] > summary .ref-chevron::before {
+        content: "▾";
+        transform: translateY(-1px);
+      }
+
       details.ref-event {
         border-top: 1px solid rgba(15, 23, 42, 0.08);
         padding: 0;
@@ -360,27 +407,30 @@
         <p class="subtitle">
           Songs selected per <strong>Event</strong>.
         </p>
-        <div class="status" id="status" role="status" aria-live="polite">
-          <span><strong>Status:</strong> <span id="statusText">Idle</span></span>
-          <span id="statusMeta"></span>
-        </div>
       </header>
 
       <main class="grid" id="tables"></main>
 
       <section class="grid" aria-label="Reference songs">
-        <div class="card">
-          <div class="card-header">
+        <details class="card ref-card" id="referenceSection">
+          <summary class="card-header">
             <h2>These are only for reference purpose</h2>
-            <div class="pill" id="referencePill" hidden></div>
-          </div>
+            <span class="ref-summary-right">
+              <span class="pill" id="referencePill" hidden></span>
+              <span class="ref-chevron" aria-hidden="true"></span>
+            </span>
+          </summary>
           <div class="ref-note">
             This is reference list and dont update.
           </div>
           <div class="empty" id="referenceStatus">Loading reference songs…</div>
           <div class="ref-list" id="referenceList" hidden></div>
-        </div>
+        </details>
       </section>
+        <div class="status" id="status" role="status" aria-live="polite">
+          <span><strong>Status:</strong> <span id="statusText">Idle</span></span>
+          <span id="statusMeta"></span>
+        </div>
 
       <div class="footer">
         Tip: If loading fails due to permissions, open the sheet and ensure it’s publicly accessible (or “Publish to the

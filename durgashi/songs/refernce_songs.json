@@ -1,0 +1,132 @@
+{
+  "events": [
+    {
+      "event": "Lagna Patrika Rayatam",
+      "songs": [
+        {"song": "Seethamma Vakitlo", "movie": "Seethamma Vakitlo Sirimalle Chettu", "year": 2013},
+        {"song": "Ammadu Lets Do Kummudu", "movie": "Khaidi No.150", "year": 2017},
+        {"song": "Mangalyam Tantunanena", "movie": "Seetharama Kalyanam", "year": 1961},
+        {"song": "Sri Seetha Ramula Kalyanam", "movie": "Sri Seetha Rama Kalyanam", "year": 1961},
+        {"song": "Chinnari Ponnari", "movie": "Swathi Muthyam", "year": 1986},
+        {"song": "Kalaya Nijama", "movie": "Coolie No.1", "year": 1991},
+        {"song": "Anjali Anjali", "movie": "Anjali", "year": 1990},
+        {"song": "Sita Kalyana Vaibhogame", "movie": "Sita Rama Kalyanam", "year": 1961},
+        {"song": "Rama Kanavemira", "movie": "Swathi Muthyam", "year": 1986},
+        {"song": "Jagadananda Karaka", "movie": "Sri Rama Rajyam", "year": 2011},
+        {"song": "Bhadrachalam Kshetram", "movie": "Sri Ramadasu", "year": 2006}
+      ]
+    },
+    {
+      "event": "Pasupu Kottatam",
+      "songs": [
+        {"song": "Seethamma Andalu Ramayya Sitralu Title Song", "movie": "Seethamma Andalu Ramayya Sitralu", "year": 2016},
+        {"song": "Aakasam Ammayaithe", "movie": "Gabbar Singh", "year": 2012},
+        {"song": "Govindudu Andarivadele Title Song", "movie": "Govindudu Andarivadele", "year": 2014},
+        {"song": "Mangamma Mangamma", "movie": "Geetha Govindam", "year": 2018},
+        {"song": "Chitti Aayire", "movie": "Bujjigadu", "year": 2008},
+        {"song": "Nuvvu Nenu", "movie": "Nuvvu Nenu", "year": 2001},
+        {"song": "Padara Padara", "movie": "Maharshi", "year": 2019},
+        {"song": "Bangaru Kodipetta", "movie": "Magadheera", "year": 2009},
+        {"song": "Vachinde", "movie": "Fidaa", "year": 2017},
+        {"song": "Satyameva Jayate", "movie": "Leader", "year": 2010},
+        {"song": "Yellipoke Shyamala", "movie": "A Aa", "year": 2016}
+      ]
+    },
+    {
+      "event": "Pellikoduku Cheyatam",
+      "songs": [
+        {"song": "Pelli Sandadi Title Song", "movie": "Pelli Sandadi", "year": 1996},
+        {"song": "Pelli Kala Vachhesinde", "movie": "Preminchukundam Raa", "year": 1997},
+        {"song": "Rara Swamy Rara", "movie": "Aagadu", "year": 2014},
+        {"song": "Darling Title Song", "movie": "Darling", "year": 2010},
+        {"song": "Oke Okkadu Title Song", "movie": "Oke Okkadu", "year": 1999},
+        {"song": "Balle Balle", "movie": "Indra", "year": 2002},
+        {"song": "O Priya Priya", "movie": "Geethanjali", "year": 1989},
+        {"song": "Bhadra Title Song", "movie": "Bhadra", "year": 2005},
+        {"song": "Andala Rakshasi Title Song", "movie": "Andala Rakshasi", "year": 2012},
+        {"song": "Aata Kavala Paata Kavala", "movie": "Annayya", "year": 2000},
+        {"song": "Kalyana Vaibhogame", "movie": "Srinivasa Kalyanam", "year": 2018}
+      ]
+    },
+    {
+      "event": "Haldi",
+      "songs": [
+        {"song": "Inkem Inkem Inkem Kaavaale", "movie": "Geetha Govindam", "year": 2018},
+        {"song": "Vachinde", "movie": "Fidaa", "year": 2017},
+        {"song": "O Laila", "movie": "Chaitanya", "year": 1991},
+        {"song": "Priyatama Priyatama", "movie": "Majili", "year": 2019},
+        {"song": "Mellaga Karagani", "movie": "Varsham", "year": 2004},
+        {"song": "Kallumoosi Yochisthey", "movie": "Veedokkade", "year": 2009},
+        {"song": "Yenti Yenti", "movie": "Geetha Govindam", "year": 2018},
+        {"song": "Cheliya Cheliya", "movie": "Kushi", "year": 2001},
+        {"song": "Nuvvostanante", "movie": "Nuvvostanante Nenoddantana", "year": 2005},
+        {"song": "Niluvaddham", "movie": "Nuvvostanante Nenoddantana", "year": 2005},
+        {"song": "Hoyna Hoyna", "movie": "Gang Leader", "year": 2019}
+      ]
+    },
+    {
+      "event": "Pelli",
+      "songs": [
+        {"song": "Sita Kalyanam", "movie": "Sri Rama Rajyam", "year": 2011},
+        {"song": "Kalyana Vaibhogame", "movie": "Srinivasa Kalyanam", "year": 2018},
+        {"song": "Mangalayam", "movie": "Varudu", "year": 2010},
+        {"song": "Seetha Kalyana Vaibhogame", "movie": "Sita Rama Kalyanam", "year": 1961},
+        {"song": "Rama Rama", "movie": "Sri Anjaneyam", "year": 2004},
+        {"song": "Janaki Ramudu", "movie": "Sri Rama Rajyam", "year": 2011},
+        {"song": "Devadevuni", "movie": "Khaleja", "year": 2010},
+        {"song": "Sri Rama Lera", "movie": "Sri Rama Rajyam", "year": 2011},
+        {"song": "Jagadananda Karaka", "movie": "Sri Rama Rajyam", "year": 2011},
+        {"song": "Kanulara Chuddam", "movie": "Raghavendra", "year": 2003},
+        {"song": "Mangalyam", "movie": "Varudu", "year": 2010}
+      ]
+    },
+    {
+      "event": "Sathyanarayana Vratham",
+      "songs": [
+        {"song": "Satyanarayana Swamy Vratham Song", "movie": "Satyanarayana Mahatyam", "year": 1964},
+        {"song": "Govinda Hari Govinda", "movie": "Annamayya", "year": 1997},
+        {"song": "Brahmam Okate", "movie": "Annamayya", "year": 1997},
+        {"song": "Jagadananda Karaka", "movie": "Sri Rama Rajyam", "year": 2011},
+        {"song": "Narayana Narayana", "movie": "Sri Manjunatha", "year": 2001},
+        {"song": "Sri Venkateswara Suprabhatam", "movie": "Sri Venkateswara Mahatyam", "year": 1960},
+        {"song": "Ananda Nilayam", "movie": "Annamayya", "year": 1997},
+        {"song": "Bhavayami Gopalabalam", "movie": "Annamayya", "year": 1997},
+        {"song": "Ksheera Sagara", "movie": "Devi Putrudu", "year": 2001},
+        {"song": "Govindha Govindha", "movie": "Govindha Govindha", "year": 1993},
+        {"song": "Om Namo Narayana", "movie": "Narasimha Naidu", "year": 2001}
+      ]
+    },
+    {
+      "event": "Appaginthalu",
+      "songs": [
+        {"song": "Amma Avani", "movie": "Rajanna", "year": 2011},
+        {"song": "Amma Ani Kothaga", "movie": "Life Is Beautiful", "year": 2012},
+        {"song": "Chinni Chinni Aasa", "movie": "Roja", "year": 1992},
+        {"song": "Yevaru Emanna", "movie": "Okariki Okaru", "year": 2003},
+        {"song": "Ghal Ghal", "movie": "Nuvvostanante Nenoddantana", "year": 2005},
+        {"song": "Oke Okkadu Amma Song", "movie": "Oke Okkadu", "year": 1999},
+        {"song": "Amma Song", "movie": "Raghuvaran B.Tech", "year": 2015},
+        {"song": "Janani Janani", "movie": "Thaai Moogambikai", "year": 1982},
+        {"song": "Amma Amma", "movie": "7th Sense", "year": 2011},
+        {"song": "Kanipenchina Maa Ammake", "movie": "Manam", "year": 2014},
+        {"song": "Pedave Palikina", "movie": "Nani", "year": 2004}
+      ]
+    },
+    {
+      "event": "Reception",
+      "songs": [
+        {"song": "Butta Bomma", "movie": "Ala Vaikunthapurramuloo", "year": 2020},
+        {"song": "Samajavaragamana", "movie": "Ala Vaikunthapurramuloo", "year": 2020},
+        {"song": "Mind Block", "movie": "Sarileru Neekevvaru", "year": 2020},
+        {"song": "Top Lesi Poddi", "movie": "Iddarammayilatho", "year": 2013},
+        {"song": "Blockbuster", "movie": "Sarrainodu", "year": 2016},
+        {"song": "Oo Antava Oo Oo Antava", "movie": "Pushpa: The Rise", "year": 2021},
+        {"song": "Seeti Maar", "movie": "Duvvada Jagannadham", "year": 2017},
+        {"song": "Ramuloo Ramulaa", "movie": "Ala Vaikunthapurramuloo", "year": 2020},
+        {"song": "Jigelu Rani", "movie": "Rangasthalam", "year": 2018},
+        {"song": "Cinema Choopistha Mava", "movie": "Race Gurram", "year": 2014},
+        {"song": "Swing Zara", "movie": "Jai Lava Kusa", "year": 2017}
+      ]
+    }
+  ]
+}

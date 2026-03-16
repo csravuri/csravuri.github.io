@@ -1,0 +1,1043 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Marriage Songs</title>
+    <meta name="description" content="Songs list split into tables by event type, loaded from a public Google Sheet." />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Merriweather:wght@400;700&display=swap"
+      rel="stylesheet"
+    />
+    <style>
+      :root {
+        color-scheme: light;
+        --bg: #f6f8ff;
+        --card: rgba(255, 255, 255, 0.86);
+        --card2: rgba(255, 255, 255, 0.92);
+        --border: rgba(15, 23, 42, 0.14);
+        --text: rgba(15, 23, 42, 0.96);
+        --muted: rgba(15, 23, 42, 0.7);
+        --accent: #2563eb;
+        --accent2: #7c3aed;
+        --danger: #dc2626;
+        --shadow: 0 14px 34px rgba(15, 23, 42, 0.12);
+      }
+
+      * {
+        box-sizing: border-box;
+      }
+
+      body {
+        margin: 0;
+        font-family: Merriweather, system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif;
+        background: radial-gradient(1200px 800px at 10% 0%, rgba(37, 99, 235, 0.18), transparent 52%),
+          radial-gradient(1000px 700px at 95% 22%, rgba(124, 58, 237, 0.16), transparent 44%),
+          radial-gradient(900px 700px at 40% 110%, rgba(14, 165, 233, 0.18), transparent 48%),
+          var(--bg);
+        color: var(--text);
+        min-height: 100dvh;
+      }
+
+      a {
+        color: var(--accent);
+        text-decoration: none;
+      }
+      a:hover {
+        text-decoration: underline;
+      }
+
+      .page {
+        max-width: 1100px;
+        margin: 0 auto;
+        padding: 22px 16px 44px;
+      }
+
+      header {
+        display: grid;
+        gap: 10px;
+        align-items: start;
+        margin-bottom: 16px;
+      }
+
+      .topbar {
+        display: flex;
+        gap: 10px;
+        align-items: center;
+        justify-content: space-between;
+        flex-wrap: wrap;
+      }
+
+      .crumbs {
+        display: flex;
+        gap: 10px;
+        align-items: center;
+        color: var(--muted);
+        font-size: 14px;
+      }
+      .crumbs a {
+        color: var(--muted);
+      }
+
+      h1 {
+        margin: 0;
+        font-size: clamp(20px, 2.2vw, 28px);
+        letter-spacing: 0.2px;
+      }
+      .subtitle {
+        margin: 0;
+        color: var(--muted);
+        font-size: 14px;
+        line-height: 1.45;
+      }
+
+      .actions {
+        display: flex;
+        gap: 10px;
+        align-items: center;
+        flex-wrap: wrap;
+      }
+
+      .btn {
+        border: 1px solid var(--border);
+        background: var(--card2);
+        color: var(--text);
+        padding: 10px 12px;
+        border-radius: 12px;
+        cursor: pointer;
+        font: inherit;
+        font-size: 14px;
+        line-height: 1;
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        box-shadow: 0 10px 18px rgba(15, 23, 42, 0.12);
+      }
+      .btn:hover {
+        filter: brightness(1.06);
+      }
+      .btn[disabled] {
+        opacity: 0.65;
+        cursor: not-allowed;
+      }
+
+      .status {
+        margin-top: 8px;
+        padding: 12px 14px;
+        border: 1px solid var(--border);
+        background: var(--card);
+        border-radius: 14px;
+        box-shadow: var(--shadow);
+        color: var(--muted);
+        font-size: 14px;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 10px;
+        flex-wrap: wrap;
+      }
+
+      .status strong {
+        color: var(--text);
+        font-weight: 700;
+      }
+
+      .error {
+        border-color: rgba(220, 38, 38, 0.25);
+        background: rgba(220, 38, 38, 0.06);
+        color: rgba(15, 23, 42, 0.92);
+      }
+
+      .grid {
+        display: grid;
+        gap: 14px;
+        margin-top: 14px;
+      }
+
+      .card {
+        position: relative;
+        border: 1px solid var(--border);
+        background: var(--card);
+        border-radius: 16px;
+        box-shadow: var(--shadow);
+        overflow: hidden;
+      }
+
+      .card.event-card {
+        background: var(--event-bg, var(--card));
+        border-color: var(--event-border, var(--border));
+      }
+
+      .card.event-card::before {
+        content: "";
+        position: absolute;
+        left: 0;
+        right: 0;
+        top: 0;
+        height: 5px;
+        background: var(--event-bar, linear-gradient(90deg, var(--accent), var(--accent2)));
+      }
+
+      .card.event-card .pill {
+        background: var(--event-pill-bg, linear-gradient(135deg, rgba(37, 99, 235, 0.1), rgba(124, 58, 237, 0.1)));
+        border-color: var(--event-border, var(--border));
+      }
+
+      .card-header {
+        padding: 14px 14px 10px;
+        border-bottom: 1px solid var(--border);
+        display: flex;
+        justify-content: space-between;
+        align-items: baseline;
+        gap: 10px;
+        flex-wrap: wrap;
+      }
+
+      .card-header h2 {
+        margin: 0;
+        font-size: 16px;
+      }
+
+      .pill {
+        font-size: 12px;
+        color: var(--muted);
+        border: 1px solid var(--border);
+        background: linear-gradient(135deg, rgba(37, 99, 235, 0.1), rgba(124, 58, 237, 0.1));
+        padding: 6px 10px;
+        border-radius: 999px;
+      }
+
+      .table-wrap {
+        overflow: auto;
+      }
+
+      table {
+        width: 100%;
+        border-collapse: collapse;
+        min-width: 720px;
+      }
+
+      thead th {
+        position: sticky;
+        top: 0;
+        z-index: 1;
+        background: rgba(255, 255, 255, 0.92);
+        backdrop-filter: blur(10px);
+        border-bottom: 1px solid var(--border);
+        text-align: left;
+        font-size: 12px;
+        color: var(--muted);
+        letter-spacing: 0.3px;
+        padding: 10px 12px;
+        white-space: nowrap;
+      }
+
+      tbody td {
+        padding: 11px 12px;
+        border-bottom: 1px solid rgba(15, 23, 42, 0.08);
+        vertical-align: top;
+        font-size: 14px;
+      }
+
+      tbody tr:nth-child(even) td {
+        background: rgba(37, 99, 235, 0.04);
+      }
+
+      .card.event-card thead th {
+        background: var(--event-thead-bg, rgba(255, 255, 255, 0.92));
+      }
+
+      .card.event-card tbody tr:nth-child(even) td {
+        background: var(--event-row-even, rgba(37, 99, 235, 0.04));
+      }
+
+      .nowrap {
+        white-space: nowrap;
+      }
+
+      .empty {
+        padding: 16px 14px;
+        color: var(--muted);
+        font-size: 14px;
+      }
+
+      .ref-note {
+        padding: 0 14px 14px;
+        color: var(--muted);
+        font-size: 13px;
+      }
+
+      .ref-list {
+        padding: 0 6px 8px;
+      }
+
+      details.ref-event {
+        border-top: 1px solid rgba(15, 23, 42, 0.08);
+        padding: 0;
+      }
+
+      details.ref-event:first-child {
+        border-top: none;
+      }
+
+      details.ref-event > summary {
+        list-style: none;
+        cursor: pointer;
+        padding: 12px 10px;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 12px;
+      }
+
+      details.ref-event > summary::-webkit-details-marker {
+        display: none;
+      }
+
+      details.ref-event[open] > summary {
+        background: linear-gradient(135deg, rgba(37, 99, 235, 0.08), rgba(124, 58, 237, 0.08));
+      }
+
+      .ref-title {
+        font-size: 14px;
+        color: var(--text);
+      }
+
+      .ref-count {
+        font-size: 12px;
+        color: var(--muted);
+        border: 1px solid var(--border);
+        padding: 6px 10px;
+        border-radius: 999px;
+        white-space: nowrap;
+      }
+
+      .ref-songs {
+        padding: 0 16px 14px;
+      }
+
+      .ref-songs ol {
+        margin: 0;
+        padding-left: 20px;
+        display: grid;
+        gap: 6px;
+      }
+
+      .ref-songs li {
+        color: rgba(15, 23, 42, 0.9);
+        font-size: 14px;
+        line-height: 1.35;
+      }
+
+      .ref-songs .meta {
+        color: var(--muted);
+        font-size: 12px;
+      }
+
+      .footer {
+        margin-top: 18px;
+        color: var(--muted);
+        font-size: 12px;
+        text-align: center;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="page">
+      <header>
+        <div class="topbar">
+          <div class="crumbs" aria-label="Breadcrumb">
+            <a href="../index.html">durgashi</a>
+            <span aria-hidden="true">/</span>
+            <span>songs</span>
+          </div>
+          <div class="actions">
+            <button class="btn" id="refreshBtn" type="button">Refresh</button>
+            <a class="btn" href="#" id="openSheetLink" target="_blank" rel="noopener noreferrer">Open sheet</a>
+          </div>
+        </div>
+        <h1>Marriage Songs</h1>
+        <p class="subtitle">
+          Songs selected per <strong>Event</strong>.
+        </p>
+        <div class="status" id="status" role="status" aria-live="polite">
+          <span><strong>Status:</strong> <span id="statusText">Idle</span></span>
+          <span id="statusMeta"></span>
+        </div>
+      </header>
+
+      <main class="grid" id="tables"></main>
+
+      <section class="grid" aria-label="Reference songs">
+        <div class="card">
+          <div class="card-header">
+            <h2>These are only for reference purpose</h2>
+            <div class="pill" id="referencePill" hidden></div>
+          </div>
+          <div class="ref-note">
+            This is reference list and dont update.
+          </div>
+          <div class="empty" id="referenceStatus">Loading reference songs…</div>
+          <div class="ref-list" id="referenceList" hidden></div>
+        </div>
+      </section>
+
+      <div class="footer">
+        Tip: If loading fails due to permissions, open the sheet and ensure it’s publicly accessible (or “Publish to the
+        web”).
+      </div>
+    </div>
+
+    <script type="module">
+      const SHEET_ID = "1Ege6nsuf6QqUSXg_szI-zRl1nOLjo71LHTk5JwwG6kg";
+      const SHEET_EDIT_URL = `https://docs.google.com/spreadsheets/d/${SHEET_ID}/edit?usp=sharing`;
+      const GVIZ_URL = `https://docs.google.com/spreadsheets/d/${SHEET_ID}/gviz/tq?tqx=out:json`;
+      const CSV_URL = `https://docs.google.com/spreadsheets/d/${SHEET_ID}/export?format=csv`;
+
+      const REQUIRED_FIELDS = [
+        "Timestamp",
+        "Event Type",
+        "Song Name",
+        "Movie Name(year)",
+        "Youtube link",
+      ];
+
+      const statusEl = document.getElementById("status");
+      const statusTextEl = document.getElementById("statusText");
+      const statusMetaEl = document.getElementById("statusMeta");
+      const tablesEl = document.getElementById("tables");
+      const refreshBtn = document.getElementById("refreshBtn");
+      const openSheetLink = document.getElementById("openSheetLink");
+      const referenceStatusEl = document.getElementById("referenceStatus");
+      const referenceListEl = document.getElementById("referenceList");
+      const referencePillEl = document.getElementById("referencePill");
+
+      openSheetLink.href = SHEET_EDIT_URL;
+
+      function setStatus(text, meta = "", { error = false } = {}) {
+        statusTextEl.textContent = text;
+        statusMetaEl.textContent = meta;
+        statusEl.classList.toggle("error", error);
+      }
+
+      function normalizeHeader(text) {
+        return String(text ?? "")
+          .trim()
+          .replace(/\s+/g, " ")
+          .toLowerCase();
+      }
+
+      function hashString(text) {
+        let hash = 0;
+        const s = String(text ?? "");
+        for (let i = 0; i < s.length; i++) {
+          hash = (hash << 5) - hash + s.charCodeAt(i);
+          hash |= 0;
+        }
+        return hash;
+      }
+
+      const EVENT_PALETTE = [
+        {
+          tint: "rgba(37, 99, 235, 0.10)",
+          border: "rgba(37, 99, 235, 0.22)",
+          bar: "linear-gradient(90deg, rgba(37, 99, 235, 0.9), rgba(14, 165, 233, 0.9))",
+          pillBg: "linear-gradient(135deg, rgba(37, 99, 235, 0.12), rgba(14, 165, 233, 0.12))",
+          rowEven: "rgba(37, 99, 235, 0.045)",
+          theadBg: "rgba(239, 246, 255, 0.95)",
+        },
+        {
+          tint: "rgba(124, 58, 237, 0.10)",
+          border: "rgba(124, 58, 237, 0.22)",
+          bar: "linear-gradient(90deg, rgba(124, 58, 237, 0.9), rgba(236, 72, 153, 0.85))",
+          pillBg: "linear-gradient(135deg, rgba(124, 58, 237, 0.12), rgba(236, 72, 153, 0.10))",
+          rowEven: "rgba(124, 58, 237, 0.04)",
+          theadBg: "rgba(245, 243, 255, 0.95)",
+        },
+        {
+          tint: "rgba(16, 185, 129, 0.10)",
+          border: "rgba(16, 185, 129, 0.22)",
+          bar: "linear-gradient(90deg, rgba(16, 185, 129, 0.9), rgba(34, 211, 238, 0.85))",
+          pillBg: "linear-gradient(135deg, rgba(16, 185, 129, 0.12), rgba(34, 211, 238, 0.10))",
+          rowEven: "rgba(16, 185, 129, 0.04)",
+          theadBg: "rgba(236, 253, 245, 0.95)",
+        },
+        {
+          tint: "rgba(245, 158, 11, 0.11)",
+          border: "rgba(245, 158, 11, 0.26)",
+          bar: "linear-gradient(90deg, rgba(245, 158, 11, 0.9), rgba(249, 115, 22, 0.9))",
+          pillBg: "linear-gradient(135deg, rgba(245, 158, 11, 0.14), rgba(249, 115, 22, 0.12))",
+          rowEven: "rgba(245, 158, 11, 0.045)",
+          theadBg: "rgba(255, 251, 235, 0.95)",
+        },
+        {
+          tint: "rgba(236, 72, 153, 0.10)",
+          border: "rgba(236, 72, 153, 0.22)",
+          bar: "linear-gradient(90deg, rgba(236, 72, 153, 0.9), rgba(239, 68, 68, 0.85))",
+          pillBg: "linear-gradient(135deg, rgba(236, 72, 153, 0.12), rgba(239, 68, 68, 0.10))",
+          rowEven: "rgba(236, 72, 153, 0.04)",
+          theadBg: "rgba(253, 242, 248, 0.95)",
+        },
+        {
+          tint: "rgba(14, 165, 233, 0.10)",
+          border: "rgba(14, 165, 233, 0.22)",
+          bar: "linear-gradient(90deg, rgba(14, 165, 233, 0.9), rgba(59, 130, 246, 0.9))",
+          pillBg: "linear-gradient(135deg, rgba(14, 165, 233, 0.12), rgba(59, 130, 246, 0.12))",
+          rowEven: "rgba(14, 165, 233, 0.04)",
+          theadBg: "rgba(240, 249, 255, 0.95)",
+        },
+        {
+          tint: "rgba(99, 102, 241, 0.10)",
+          border: "rgba(99, 102, 241, 0.22)",
+          bar: "linear-gradient(90deg, rgba(99, 102, 241, 0.9), rgba(168, 85, 247, 0.85))",
+          pillBg: "linear-gradient(135deg, rgba(99, 102, 241, 0.12), rgba(168, 85, 247, 0.10))",
+          rowEven: "rgba(99, 102, 241, 0.04)",
+          theadBg: "rgba(238, 242, 255, 0.95)",
+        },
+        {
+          tint: "rgba(34, 197, 94, 0.10)",
+          border: "rgba(34, 197, 94, 0.22)",
+          bar: "linear-gradient(90deg, rgba(34, 197, 94, 0.9), rgba(132, 204, 22, 0.85))",
+          pillBg: "linear-gradient(135deg, rgba(34, 197, 94, 0.12), rgba(132, 204, 22, 0.10))",
+          rowEven: "rgba(34, 197, 94, 0.04)",
+          theadBg: "rgba(240, 253, 244, 0.95)",
+        },
+      ];
+
+      function paletteForEvent(eventType) {
+        const idx = Math.abs(hashString(eventType)) % EVENT_PALETTE.length;
+        return EVENT_PALETTE[idx];
+      }
+
+      function tryGetSafeUrl(url) {
+        try {
+          const parsed = new URL(String(url));
+          if (parsed.protocol === "http:" || parsed.protocol === "https:") return parsed.toString();
+          return null;
+        } catch {
+          return null;
+        }
+      }
+
+      function coerceCellValue(value) {
+        if (value == null) return "";
+        if (value instanceof Date && !Number.isNaN(value.getTime())) {
+          return value.toLocaleString();
+        }
+        if (typeof value === "string" && value.startsWith("__DATE__(") && value.endsWith(")")) {
+          const args = value.slice("__DATE__(".length, -1);
+          const parts = args
+            .split(",")
+            .map((p) => p.trim())
+            .filter((p) => p.length > 0)
+            .map((p) => Number.parseInt(p, 10));
+          if (parts.length >= 3 && parts.every((n) => Number.isFinite(n))) {
+            const [y, m, d, hh = 0, mm = 0, ss = 0] = parts;
+            const dt = new Date(y, m, d, hh, mm, ss);
+            if (!Number.isNaN(dt.getTime())) return dt.toLocaleString();
+          }
+        }
+        return String(value);
+      }
+
+      function parseGviz(text) {
+        const marker = "google.visualization.Query.setResponse(";
+        const start = text.indexOf(marker);
+        if (start === -1) throw new Error("Unexpected GViz response format (missing setResponse).");
+        const payloadStart = start + marker.length;
+        const payloadEnd = text.lastIndexOf(");");
+        if (payloadEnd === -1 || payloadEnd <= payloadStart) {
+          throw new Error("Unexpected GViz response format (missing terminator).");
+        }
+
+        let payload = text.slice(payloadStart, payloadEnd).trim();
+        payload = payload.replace(/new Date\(([^)]*)\)/g, (_, args) => `"__DATE__(${args})"`);
+        payload = payload.replace(/Date\(([^)]*)\)/g, (_, args) => `"__DATE__(${args})"`);
+
+        return JSON.parse(payload);
+      }
+
+      function rowsFromGviz(gvizResponse) {
+        const table = gvizResponse?.table;
+        if (!table?.cols?.length) return [];
+
+        const headers = table.cols.map((c, idx) => ({
+          idx,
+          label: String(c?.label ?? "").trim(),
+          normalized: normalizeHeader(c?.label ?? ""),
+        }));
+
+        const indexByHeader = new Map(headers.map((h) => [h.normalized, h.idx]));
+        const requiredNormalized = REQUIRED_FIELDS.map(normalizeHeader);
+        const hasAll = requiredNormalized.every((h) => indexByHeader.has(h));
+
+        const get = (cells, header, fallbackIdx) => {
+          const idx = hasAll ? indexByHeader.get(normalizeHeader(header)) : fallbackIdx;
+          const cell = Number.isInteger(idx) ? cells?.[idx] : undefined;
+          return coerceCellValue(cell?.f ?? cell?.v ?? "");
+        };
+
+        const result = [];
+        for (const row of table.rows ?? []) {
+          const cells = row?.c ?? [];
+          const record = {
+            timestamp: get(cells, "Timestamp", 0),
+            eventType: get(cells, "Event Type", 1),
+            songName: get(cells, "Song Name", 2),
+            movieName: get(cells, "Movie Name(year)", 3),
+            youtubeLink: get(cells, "Youtube link", 4),
+          };
+          if (
+            record.timestamp ||
+            record.eventType ||
+            record.songName ||
+            record.movieName ||
+            record.youtubeLink
+          ) {
+            result.push(record);
+          }
+        }
+        return result;
+      }
+
+      function loadGvizViaScript() {
+        return new Promise((resolve, reject) => {
+          const callbackName = `__gviz_cb_${Math.random().toString(36).slice(2)}`;
+          const timeoutMs = 15000;
+
+          let timeoutId = null;
+          let script = null;
+
+          function cleanup() {
+            if (timeoutId != null) window.clearTimeout(timeoutId);
+            timeoutId = null;
+            if (script?.parentNode) script.parentNode.removeChild(script);
+            script = null;
+            try {
+              delete window[callbackName];
+            } catch {
+              window[callbackName] = undefined;
+            }
+          }
+
+          window[callbackName] = (data) => {
+            cleanup();
+            resolve(data);
+          };
+
+          timeoutId = window.setTimeout(() => {
+            cleanup();
+            reject(new Error("Timed out waiting for GViz response."));
+          }, timeoutMs);
+
+          // GViz supports a response handler to enable JSONP-style loading.
+          const src = `https://docs.google.com/spreadsheets/d/${SHEET_ID}/gviz/tq?tqx=${encodeURIComponent(
+            `out:json;responseHandler:${callbackName}`
+          )}`;
+
+          script = document.createElement("script");
+          script.async = true;
+          script.src = src;
+          script.onerror = () => {
+            cleanup();
+            reject(new Error("Failed to load GViz script response (network or access)."));
+          };
+          document.head.appendChild(script);
+        });
+      }
+
+      function parseCsv(text) {
+        const rows = [];
+        let row = [];
+        let value = "";
+        let inQuotes = false;
+
+        function pushValue() {
+          row.push(value);
+          value = "";
+        }
+        function pushRow() {
+          // Ignore trailing empty row
+          if (row.length === 1 && row[0] === "" && rows.length > 0) return;
+          rows.push(row);
+          row = [];
+        }
+
+        for (let i = 0; i < text.length; i++) {
+          const ch = text[i];
+          if (inQuotes) {
+            if (ch === '"') {
+              const next = text[i + 1];
+              if (next === '"') {
+                value += '"';
+                i++;
+              } else {
+                inQuotes = false;
+              }
+            } else {
+              value += ch;
+            }
+            continue;
+          }
+
+          if (ch === '"') {
+            inQuotes = true;
+            continue;
+          }
+          if (ch === ",") {
+            pushValue();
+            continue;
+          }
+          if (ch === "\n") {
+            pushValue();
+            pushRow();
+            continue;
+          }
+          if (ch === "\r") continue;
+          value += ch;
+        }
+        pushValue();
+        pushRow();
+        return rows;
+      }
+
+      function rowsFromCsv(csvText) {
+        const rows = parseCsv(csvText);
+        if (rows.length < 2) return [];
+
+        const headers = rows[0].map((h) => String(h ?? "").trim());
+        const indexByHeader = new Map(headers.map((h, i) => [normalizeHeader(h), i]));
+        const requiredNormalized = REQUIRED_FIELDS.map(normalizeHeader);
+        const hasAll = requiredNormalized.every((h) => indexByHeader.has(h));
+
+        const get = (r, header, fallbackIdx) => {
+          const idx = hasAll ? indexByHeader.get(normalizeHeader(header)) : fallbackIdx;
+          return String(r?.[idx] ?? "").trim();
+        };
+
+        const result = [];
+        for (const r of rows.slice(1)) {
+          const record = {
+            timestamp: get(r, "Timestamp", 0),
+            eventType: get(r, "Event Type", 1),
+            songName: get(r, "Song Name", 2),
+            movieName: get(r, "Movie Name(year)", 3),
+            youtubeLink: get(r, "Youtube link", 4),
+          };
+          if (
+            record.timestamp ||
+            record.eventType ||
+            record.songName ||
+            record.movieName ||
+            record.youtubeLink
+          ) {
+            result.push(record);
+          }
+        }
+        return result;
+      }
+
+      function clearTables() {
+        tablesEl.replaceChildren();
+      }
+
+      function renderReferenceSongs(payload) {
+        referenceListEl.replaceChildren();
+
+        const events = Array.isArray(payload?.events) ? payload.events : [];
+        const totalSongs = events.reduce((sum, e) => sum + (Array.isArray(e?.songs) ? e.songs.length : 0), 0);
+
+        if (!events.length) {
+          referencePillEl.hidden = true;
+          referenceStatusEl.textContent = "No reference songs found.";
+          referenceStatusEl.hidden = false;
+          referenceListEl.hidden = true;
+          return;
+        }
+
+        referencePillEl.textContent = `${totalSongs} song${totalSongs === 1 ? "" : "s"}`;
+        referencePillEl.hidden = false;
+
+        for (const evt of events) {
+          const eventName = String(evt?.event ?? "").trim() || "Other";
+          const songs = Array.isArray(evt?.songs) ? evt.songs : [];
+
+          const details = document.createElement("details");
+          details.className = "ref-event";
+
+          const summary = document.createElement("summary");
+
+          const title = document.createElement("span");
+          title.className = "ref-title";
+          title.textContent = eventName;
+
+          const count = document.createElement("span");
+          count.className = "ref-count";
+          count.textContent = `${songs.length} song${songs.length === 1 ? "" : "s"}`;
+
+          summary.appendChild(title);
+          summary.appendChild(count);
+
+          const body = document.createElement("div");
+          body.className = "ref-songs";
+
+          if (!songs.length) {
+            const empty = document.createElement("div");
+            empty.className = "meta";
+            empty.textContent = "No songs listed for this event.";
+            body.appendChild(empty);
+          } else {
+            const ol = document.createElement("ol");
+            for (const s of songs) {
+              const song = String(s?.song ?? "").trim();
+              const movie = String(s?.movie ?? "").trim();
+              const year = s?.year != null && String(s.year).trim() ? String(s.year).trim() : "";
+
+              const li = document.createElement("li");
+              const main = document.createElement("div");
+              main.textContent = song || "—";
+
+              const meta = document.createElement("div");
+              meta.className = "meta";
+              const moviePart = movie ? movie : "—";
+              meta.textContent = year ? `${moviePart} (${year})` : moviePart;
+
+              li.appendChild(main);
+              li.appendChild(meta);
+              ol.appendChild(li);
+            }
+            body.appendChild(ol);
+          }
+
+          details.appendChild(summary);
+          details.appendChild(body);
+          referenceListEl.appendChild(details);
+        }
+
+        referenceStatusEl.hidden = true;
+        referenceListEl.hidden = false;
+      }
+
+      async function loadReferenceSongs() {
+        referenceStatusEl.textContent = "Loading reference songs…";
+        referenceStatusEl.hidden = false;
+        referenceListEl.hidden = true;
+        referencePillEl.hidden = true;
+
+        const candidates = ["./refernce_songs.json", "./reference_songs.json"];
+        let lastErr = null;
+
+        for (const url of candidates) {
+          try {
+            const res = await fetch(url, { cache: "no-store" });
+            if (!res.ok) throw new Error(`${res.status} ${res.statusText}`.trim());
+            const payload = await res.json();
+            renderReferenceSongs(payload);
+            return;
+          } catch (err) {
+            lastErr = err;
+          }
+        }
+
+        const msg = lastErr instanceof Error ? lastErr.message : String(lastErr ?? "Unknown error");
+        referenceStatusEl.textContent = `Failed to load reference songs: ${msg}`;
+        referenceStatusEl.hidden = false;
+        referenceListEl.hidden = true;
+        referencePillEl.hidden = true;
+      }
+
+      function renderGroupedTables(records) {
+        clearTables();
+
+        if (!records.length) {
+          const empty = document.createElement("div");
+          empty.className = "card";
+          const msg = document.createElement("div");
+          msg.className = "empty";
+          msg.textContent = "No rows found in the sheet.";
+          empty.appendChild(msg);
+          tablesEl.appendChild(empty);
+          return;
+        }
+
+        const grouped = new Map();
+        for (const r of records) {
+          const key = String(r.eventType || "Other").trim() || "Other";
+          const list = grouped.get(key) ?? [];
+          list.push(r);
+          grouped.set(key, list);
+        }
+
+        for (const [eventType, list] of grouped) {
+          const card = document.createElement("section");
+          card.className = "card event-card";
+          const pal = paletteForEvent(eventType);
+          card.style.setProperty(
+            "--event-bg",
+            `linear-gradient(135deg, rgba(255, 255, 255, 0.92), ${pal.tint})`
+          );
+          card.style.setProperty("--event-border", pal.border);
+          card.style.setProperty("--event-bar", pal.bar);
+          card.style.setProperty("--event-pill-bg", pal.pillBg);
+          card.style.setProperty("--event-row-even", pal.rowEven);
+          card.style.setProperty("--event-thead-bg", pal.theadBg);
+
+          const header = document.createElement("div");
+          header.className = "card-header";
+
+          const h2 = document.createElement("h2");
+          h2.textContent = eventType;
+
+          const pill = document.createElement("div");
+          pill.className = "pill";
+          pill.textContent = `${list.length} song${list.length === 1 ? "" : "s"}`;
+
+          header.appendChild(h2);
+          header.appendChild(pill);
+
+          const wrap = document.createElement("div");
+          wrap.className = "table-wrap";
+
+          const table = document.createElement("table");
+          table.setAttribute("role", "table");
+          table.setAttribute("aria-label", `Songs for ${eventType}`);
+
+          const thead = document.createElement("thead");
+          const trh = document.createElement("tr");
+          for (const name of ["S.No", "Timestamp", "Song Name", "Movie Name(year)", "YouTube"]) {
+            const th = document.createElement("th");
+            th.scope = "col";
+            th.textContent = name;
+            trh.appendChild(th);
+          }
+          thead.appendChild(trh);
+
+          const tbody = document.createElement("tbody");
+          for (const [idx, r] of list.entries()) {
+            const tr = document.createElement("tr");
+
+            const tdSno = document.createElement("td");
+            tdSno.className = "nowrap";
+            tdSno.textContent = String(idx + 1);
+
+            const tdTs = document.createElement("td");
+            tdTs.className = "nowrap";
+            tdTs.textContent = r.timestamp || "—";
+
+            const tdSong = document.createElement("td");
+            tdSong.textContent = r.songName || "—";
+
+            const tdMovie = document.createElement("td");
+            tdMovie.textContent = r.movieName || "—";
+
+            const tdLink = document.createElement("td");
+            const safeUrl = tryGetSafeUrl(r.youtubeLink);
+            if (safeUrl) {
+              const a = document.createElement("a");
+              a.href = safeUrl;
+              a.target = "_blank";
+              a.rel = "noopener noreferrer";
+              a.textContent = "Watch";
+              tdLink.appendChild(a);
+            } else {
+              tdLink.textContent = r.youtubeLink ? String(r.youtubeLink) : "—";
+            }
+
+            tr.appendChild(tdSno);
+            tr.appendChild(tdTs);
+            tr.appendChild(tdSong);
+            tr.appendChild(tdMovie);
+            tr.appendChild(tdLink);
+            tbody.appendChild(tr);
+          }
+
+          table.appendChild(thead);
+          table.appendChild(tbody);
+          wrap.appendChild(table);
+
+          card.appendChild(header);
+          card.appendChild(wrap);
+          tablesEl.appendChild(card);
+        }
+      }
+
+      async function loadData() {
+        refreshBtn.disabled = true;
+        setStatus("Loading…", "Fetching sheet data");
+
+        const startedAt = Date.now();
+        try {
+          // Prefer GViz (works for many public sheets without publishing).
+          try {
+            const res = await fetch(GVIZ_URL, { cache: "no-store" });
+            if (!res.ok) throw new Error(`GViz request failed: ${res.status}`);
+            const text = await res.text();
+            const gviz = parseGviz(text);
+            const records = rowsFromGviz(gviz);
+            renderGroupedTables(records);
+            const ms = Date.now() - startedAt;
+            setStatus("Loaded", `${records.length} rows • ${ms}ms • Source: GViz JSON`);
+            return;
+          } catch (gvizErr) {
+            // If fetch is blocked (often CORS), try JSONP-style GViz loading via <script>.
+            try {
+              const gviz = await loadGvizViaScript();
+              const records = rowsFromGviz(gviz);
+              renderGroupedTables(records);
+              const ms = Date.now() - startedAt;
+              setStatus("Loaded", `${records.length} rows • ${ms}ms • Source: GViz script`);
+              return;
+            } catch {
+              // Fall back to CSV export (often needs “Publish to the web” and may still be CORS-blocked).
+              const res = await fetch(CSV_URL, { cache: "no-store" });
+              if (!res.ok) throw new Error(`CSV export failed: ${res.status}`);
+              const text = await res.text();
+              const records = rowsFromCsv(text);
+              renderGroupedTables(records);
+              const ms = Date.now() - startedAt;
+              setStatus("Loaded", `${records.length} rows • ${ms}ms • Source: CSV export`);
+            }
+          }
+        } catch (err) {
+          clearTables();
+          const msg = err instanceof Error ? err.message : String(err);
+          setStatus("Failed to load", msg, { error: true });
+
+          const card = document.createElement("section");
+          card.className = "card";
+          const empty = document.createElement("div");
+          empty.className = "empty";
+          empty.innerHTML = "";
+          empty.appendChild(
+            document.createTextNode(
+              "Could not load the sheet data from the browser. If the sheet is public but still failing, try: "
+            )
+          );
+          const link = document.createElement("a");
+          link.href = SHEET_EDIT_URL;
+          link.target = "_blank";
+          link.rel = "noopener noreferrer";
+          link.textContent = "open the sheet";
+          empty.appendChild(link);
+          empty.appendChild(
+            document.createTextNode(
+              " and use Google Sheets → File → Share/Publish options (e.g., “Publish to the web”), then reload."
+            )
+          );
+          card.appendChild(empty);
+          tablesEl.appendChild(card);
+        } finally {
+          refreshBtn.disabled = false;
+        }
+      }
+
+      refreshBtn.addEventListener("click", () => {
+        void loadData();
+      });
+
+      // Auto-load on open.
+      void loadData();
+      void loadReferenceSongs();
+    </script>
+  </body>
+</html>

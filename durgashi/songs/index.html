@@ -369,17 +369,20 @@
       <main class="grid" id="tables"></main>
 
       <section class="grid" aria-label="Reference songs">
-        <div class="card">
-          <div class="card-header">
+        <details class="card ref-card" id="referenceSection">
+          <summary class="card-header">
             <h2>These are only for reference purpose</h2>
-            <div class="pill" id="referencePill" hidden></div>
-          </div>
+            <span class="ref-summary-right">
+              <span class="pill" id="referencePill" hidden></span>
+              <span class="ref-chevron" aria-hidden="true"></span>
+            </span>
+          </summary>
           <div class="ref-note">
             This is reference list and dont update.
           </div>
           <div class="empty" id="referenceStatus">Loading reference songs…</div>
           <div class="ref-list" id="referenceList" hidden></div>
-        </div>
+        </details>
       </section>
 
       <div class="footer">
@@ -408,11 +411,13 @@
       const tablesEl = document.getElementById("tables");
       const refreshBtn = document.getElementById("refreshBtn");
       const openSheetLink = document.getElementById("openSheetLink");
+      const referenceSectionEl = document.getElementById("referenceSection");
       const referenceStatusEl = document.getElementById("referenceStatus");
       const referenceListEl = document.getElementById("referenceList");
       const referencePillEl = document.getElementById("referencePill");
 
       openSheetLink.href = SHEET_EDIT_URL;
+      if (referenceSectionEl) referenceSectionEl.open = false;
 
       function setStatus(text, meta = "", { error = false } = {}) {
         statusTextEl.textContent = text;

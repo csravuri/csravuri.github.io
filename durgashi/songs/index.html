@@ -155,11 +155,32 @@
       }
 
       .card {
+        position: relative;
         border: 1px solid var(--border);
         background: var(--card);
         border-radius: 16px;
         box-shadow: var(--shadow);
         overflow: hidden;
+      }
+
+      .card.event-card {
+        background: var(--event-bg, var(--card));
+        border-color: var(--event-border, var(--border));
+      }
+
+      .card.event-card::before {
+        content: "";
+        position: absolute;
+        left: 0;
+        right: 0;
+        top: 0;
+        height: 5px;
+        background: var(--event-bar, linear-gradient(90deg, var(--accent), var(--accent2)));
+      }
+
+      .card.event-card .pill {
+        background: var(--event-pill-bg, linear-gradient(135deg, rgba(37, 99, 235, 0.1), rgba(124, 58, 237, 0.1)));
+        border-color: var(--event-border, var(--border));
       }
 
       .card-header {
@@ -220,6 +241,14 @@
 
       tbody tr:nth-child(even) td {
         background: rgba(37, 99, 235, 0.04);
+      }
+
+      .card.event-card thead th {
+        background: var(--event-thead-bg, rgba(255, 255, 255, 0.92));
+      }
+
+      .card.event-card tbody tr:nth-child(even) td {
+        background: var(--event-row-even, rgba(37, 99, 235, 0.04));
       }
 
       .nowrap {
@@ -396,6 +425,88 @@
           .trim()
           .replace(/\s+/g, " ")
           .toLowerCase();
+      }
+
+      function hashString(text) {
+        let hash = 0;
+        const s = String(text ?? "");
+        for (let i = 0; i < s.length; i++) {
+          hash = (hash << 5) - hash + s.charCodeAt(i);
+          hash |= 0;
+        }
+        return hash;
+      }
+
+      const EVENT_PALETTE = [
+        {
+          tint: "rgba(37, 99, 235, 0.10)",
+          border: "rgba(37, 99, 235, 0.22)",
+          bar: "linear-gradient(90deg, rgba(37, 99, 235, 0.9), rgba(14, 165, 233, 0.9))",
+          pillBg: "linear-gradient(135deg, rgba(37, 99, 235, 0.12), rgba(14, 165, 233, 0.12))",
+          rowEven: "rgba(37, 99, 235, 0.045)",
+          theadBg: "rgba(239, 246, 255, 0.95)",
+        },
+        {
+          tint: "rgba(124, 58, 237, 0.10)",
+          border: "rgba(124, 58, 237, 0.22)",
+          bar: "linear-gradient(90deg, rgba(124, 58, 237, 0.9), rgba(236, 72, 153, 0.85))",
+          pillBg: "linear-gradient(135deg, rgba(124, 58, 237, 0.12), rgba(236, 72, 153, 0.10))",
+          rowEven: "rgba(124, 58, 237, 0.04)",
+          theadBg: "rgba(245, 243, 255, 0.95)",
+        },
+        {
+          tint: "rgba(16, 185, 129, 0.10)",
+          border: "rgba(16, 185, 129, 0.22)",
+          bar: "linear-gradient(90deg, rgba(16, 185, 129, 0.9), rgba(34, 211, 238, 0.85))",
+          pillBg: "linear-gradient(135deg, rgba(16, 185, 129, 0.12), rgba(34, 211, 238, 0.10))",
+          rowEven: "rgba(16, 185, 129, 0.04)",
+          theadBg: "rgba(236, 253, 245, 0.95)",
+        },
+        {
+          tint: "rgba(245, 158, 11, 0.11)",
+          border: "rgba(245, 158, 11, 0.26)",
+          bar: "linear-gradient(90deg, rgba(245, 158, 11, 0.9), rgba(249, 115, 22, 0.9))",
+          pillBg: "linear-gradient(135deg, rgba(245, 158, 11, 0.14), rgba(249, 115, 22, 0.12))",
+          rowEven: "rgba(245, 158, 11, 0.045)",
+          theadBg: "rgba(255, 251, 235, 0.95)",
+        },
+        {
+          tint: "rgba(236, 72, 153, 0.10)",
+          border: "rgba(236, 72, 153, 0.22)",
+          bar: "linear-gradient(90deg, rgba(236, 72, 153, 0.9), rgba(239, 68, 68, 0.85))",
+          pillBg: "linear-gradient(135deg, rgba(236, 72, 153, 0.12), rgba(239, 68, 68, 0.10))",
+          rowEven: "rgba(236, 72, 153, 0.04)",
+          theadBg: "rgba(253, 242, 248, 0.95)",
+        },
+        {
+          tint: "rgba(14, 165, 233, 0.10)",
+          border: "rgba(14, 165, 233, 0.22)",
+          bar: "linear-gradient(90deg, rgba(14, 165, 233, 0.9), rgba(59, 130, 246, 0.9))",
+          pillBg: "linear-gradient(135deg, rgba(14, 165, 233, 0.12), rgba(59, 130, 246, 0.12))",
+          rowEven: "rgba(14, 165, 233, 0.04)",
+          theadBg: "rgba(240, 249, 255, 0.95)",
+        },
+        {
+          tint: "rgba(99, 102, 241, 0.10)",
+          border: "rgba(99, 102, 241, 0.22)",
+          bar: "linear-gradient(90deg, rgba(99, 102, 241, 0.9), rgba(168, 85, 247, 0.85))",
+          pillBg: "linear-gradient(135deg, rgba(99, 102, 241, 0.12), rgba(168, 85, 247, 0.10))",
+          rowEven: "rgba(99, 102, 241, 0.04)",
+          theadBg: "rgba(238, 242, 255, 0.95)",
+        },
+        {
+          tint: "rgba(34, 197, 94, 0.10)",
+          border: "rgba(34, 197, 94, 0.22)",
+          bar: "linear-gradient(90deg, rgba(34, 197, 94, 0.9), rgba(132, 204, 22, 0.85))",
+          pillBg: "linear-gradient(135deg, rgba(34, 197, 94, 0.12), rgba(132, 204, 22, 0.10))",
+          rowEven: "rgba(34, 197, 94, 0.04)",
+          theadBg: "rgba(240, 253, 244, 0.95)",
+        },
+      ];
+
+      function paletteForEvent(eventType) {
+        const idx = Math.abs(hashString(eventType)) % EVENT_PALETTE.length;
+        return EVENT_PALETTE[idx];
       }
 
       function tryGetSafeUrl(url) {
@@ -759,7 +870,17 @@
 
         for (const [eventType, list] of grouped) {
           const card = document.createElement("section");
-          card.className = "card";
+          card.className = "card event-card";
+          const pal = paletteForEvent(eventType);
+          card.style.setProperty(
+            "--event-bg",
+            `linear-gradient(135deg, rgba(255, 255, 255, 0.92), ${pal.tint})`
+          );
+          card.style.setProperty("--event-border", pal.border);
+          card.style.setProperty("--event-bar", pal.bar);
+          card.style.setProperty("--event-pill-bg", pal.pillBg);
+          card.style.setProperty("--event-row-even", pal.rowEven);
+          card.style.setProperty("--event-thead-bg", pal.theadBg);
 
           const header = document.createElement("div");
           header.className = "card-header";
